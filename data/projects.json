@@ -8,18 +8,16 @@
     "demo": "https://english-reading-lab.pages.dev",
     "repo": "https://github.com/Renat1k/english-reading-lab"
   },
-  {
-    "type": "bot",
-    "title": "LingoBuddy",
-    "description": "A Telegram bot for daily English practice: it sends short reading tasks, checks answers, keeps a personal vocabulary list, and schedules spaced-repetition reminders.",
-    "avatar": "./assets/img/avatar.svg",
-    "screenshots": [
-      "./assets/img/projects/reading-lab.png",
-      "./assets/img/projects/chroma.svg",
-      "./assets/img/projects/typeflow.svg"
-    ],
-    "tags": ["Python", "aiogram", "OpenAI API", "SQLite"],
-    "demo": "https://t.me/your_bot",
-    "repo": "https://github.com/Renat1k/lingobuddy-bot"
-  }
+{
+  "type": "bot",
+  "title": "FluentFable Bot",
+  "description": "Telegram-бот для приёма заявок на услуги: выбор языка (RU/EN), пошаговая форма (услуга, бюджет, описание, срок), уведомления админу о новых заказах, админ-панель со статусами (новые, в обработке, завершённые) и возможность клиента отменить заявку.",
+  "avatar": "./assets/img/projects/bot-avatar.png",
+  "screenshots": [
+    "./assets/img/projects/bot-screen.png"
+  ],
+  "tags": ["Python", "python-telegram-bot", "Flask", "SQLite", "Render"],
+  "demo": "https://t.me/твой_бот_юзернейм",
+  "repo": "https://github.com/Renat1k/FluentFable_bot"
+}
 ]
