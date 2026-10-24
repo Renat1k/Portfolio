@@ -1,0 +1,26 @@
+[
+  {
+    "title": "Lumen",
+    "description": "An AI study companion that turns notes and PDFs into flashcards, quizzes, and guided explanations for focused learning.",
+    "image": "./assets/img/projects/lumen.svg",
+    "tags": ["React", "TypeScript", "OpenAI", "Vite"],
+    "demo": "https://example.com",
+    "repo": "https://github.com/yourhandle/lumen"
+  },
+  {
+    "title": "Typeflow",
+    "description": "A minimal typing trainer with live WPM and accuracy, adaptive lessons, and a shared leaderboard for small learning communities.",
+    "image": "./assets/img/projects/typeflow.svg",
+    "tags": ["Next.js", "Tailwind", "Supabase"],
+    "demo": "https://example.com",
+    "repo": "https://github.com/yourhandle/typeflow"
+  },
+  {
+    "title": "Chroma",
+    "description": "A browser-based color system playground for building accessible palettes and exporting production-ready design tokens.",
+    "image": "./assets/img/projects/chroma.svg",
+    "tags": ["Vue", "Canvas", "Design Systems"],
+    "demo": "https://example.com",
+    "repo": "https://github.com/yourhandle/chroma"
+  }
+]

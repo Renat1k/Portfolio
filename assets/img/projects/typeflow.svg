@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750" role="img" aria-label="Typeflow typing trainer interface">
+  <defs>
+    <linearGradient id="tf-bg" x1="0" y1="0" x2="1200" y2="750" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ead9c2"/>
+      <stop offset=".55" stop-color="#dfc9ae"/>
+      <stop offset="1" stop-color="#d4b899"/>
+    </linearGradient>
+    <linearGradient id="tf-avatar" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#c97a4c"/>
+      <stop offset="1" stop-color="#8d5334"/>
+    </linearGradient>
+    <filter id="tf-shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="26" stdDeviation="30" flood-color="#5c402b" flood-opacity=".3"/>
+    </filter>
+    <clipPath id="tf-window">
+      <rect x="88" y="70" width="1024" height="620" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1200" height="750" fill="url(#tf-bg)"/>
+  <circle cx="1080" cy="70" r="290" fill="#fff8ec" opacity=".38"/>
+  <circle cx="80" cy="720" r="280" fill="#b96a41" opacity=".1"/>
+
+  <g filter="url(#tf-shadow)">
+    <rect x="88" y="70" width="1024" height="620" rx="26" fill="#fffbf4"/>
+  </g>
+
+  <g clip-path="url(#tf-window)" font-family="Segoe UI, Arial, Helvetica, sans-serif">
+    <!-- top bar -->
+    <path d="M128 112c1.9 9 5.4 12.5 14.4 14.4-9 1.9-12.5 5.4-14.4 14.4-1.9-9-5.4-12.5-14.4-14.4 9-1.9 12.5-5.4 14.4-14.4Z" fill="#bf6a3e"/>
+    <text x="152" y="136" fill="#2b251e" font-size="23" font-weight="700" letter-spacing="-.7">typeflow</text>
+
+    <rect x="444" y="104" width="103" height="38" rx="19" fill="#f3e8d8"/>
+    <text x="495" y="128" fill="#2b251e" font-size="13.5" font-weight="500" text-anchor="middle">Practice</text>
+    <text x="578" y="128" fill="#9a8a78" font-size="13.5" text-anchor="middle">Stats</text>
+    <text x="646" y="128" fill="#9a8a78" font-size="13.5" text-anchor="middle">Library</text>
+
+    <rect x="902" y="106" width="118" height="36" rx="18" fill="#f6ecdd" stroke="#ecdfce"/>
+    <path d="M920 129c-4-3.6-6-7-6-10.2 0-2.4 1.6-4.4 4-4.4 1.1 0 2.1.5 2.8 1.4.7-.9 1.7-1.4 2.8-1.4 2.4 0 4 2 4 4.4 0 3.2-2 6.6-6 10.2l-.8.7-.8-.7Z" fill="#bf6a3e"/>
+    <text x="938" y="129" fill="#7f6b58" font-size="12" font-weight="500">12 day streak</text>
+
+    <circle cx="1064" cy="124" r="18" fill="url(#tf-avatar)"/>
+    <circle cx="1064" cy="124" r="18" fill="none" stroke="#ffffff" stroke-opacity=".6"/>
+
+    <!-- lesson -->
+    <text x="600" y="202" fill="#a8866c" font-size="11" font-weight="600" letter-spacing="2.4" text-anchor="middle">LESSON 04 · HOME ROW</text>
+
+    <text x="600" y="292" fill="#2b251e" font-size="52" font-weight="500" letter-spacing="-1.2" text-anchor="middle">The quick brown fox</text>
+    <text x="600" y="356" fill="#2b251e" font-size="52" font-weight="500" letter-spacing="-1.2" text-anchor="middle">jumps over the <tspan fill="#bf6a3e">lazy</tspan> dog.</text>
+    <text x="600" y="410" fill="#c7b7a3" font-size="22" text-anchor="middle">Pack my box with five dozen liquor jugs.</text>
+
+    <!-- stats -->
+    <rect x="152" y="442" width="244" height="100" rx="16" fill="#faf3e8" stroke="#eddfcd"/>
+    <text x="176" y="493" fill="#2b251e" font-size="36" font-weight="600" letter-spacing="-1">72</text>
+    <text x="224" y="493" fill="#a08c78" font-size="13">wpm</text>
+    <text x="176" y="520" fill="#a08c78" font-size="10.5" font-weight="600" letter-spacing="1.4">AVERAGE SPEED</text>
+    <text x="372" y="477" fill="#bf6a3e" font-size="11" font-weight="600" text-anchor="end">↑ 6</text>
+
+    <rect x="478" y="442" width="244" height="100" rx="16" fill="#faf3e8" stroke="#eddfcd"/>
+    <text x="502" y="493" fill="#2b251e" font-size="36" font-weight="600" letter-spacing="-1">98%</text>
+    <text x="502" y="520" fill="#a08c78" font-size="10.5" font-weight="600" letter-spacing="1.4">ACCURACY</text>
+
+    <rect x="804" y="442" width="244" height="100" rx="16" fill="#faf3e8" stroke="#eddfcd"/>
+    <text x="828" y="493" fill="#2b251e" font-size="36" font-weight="600" letter-spacing="-1">4:32</text>
+    <text x="828" y="520" fill="#a08c78" font-size="10.5" font-weight="600" letter-spacing="1.4">SESSION TIME</text>
+
+    <!-- keyboard -->
+    <g fill="#f7eee1" stroke="#eadcc9">
+      <rect x="324" y="570" width="48" height="32" rx="8"/>
+      <rect x="380" y="570" width="48" height="32" rx="8"/>
+      <rect x="436" y="570" width="48" height="32" rx="8"/>
+      <rect x="492" y="570" width="48" height="32" rx="8"/>
+      <rect x="548" y="570" width="48" height="32" rx="8"/>
+      <rect x="604" y="570" width="48" height="32" rx="8"/>
+      <rect x="660" y="570" width="48" height="32" rx="8"/>
+      <rect x="716" y="570" width="48" height="32" rx="8"/>
+      <rect x="772" y="570" width="48" height="32" rx="8"/>
+      <rect x="828" y="570" width="48" height="32" rx="8"/>
+
+      <rect x="352" y="610" width="48" height="32" rx="8"/>
+      <rect x="408" y="610" width="48" height="32" rx="8"/>
+      <rect x="464" y="610" width="48" height="32" rx="8"/>
+      <rect x="520" y="610" width="48" height="32" rx="8"/>
+      <rect x="576" y="610" width="48" height="32" rx="8"/>
+      <rect x="632" y="610" width="48" height="32" rx="8"/>
+      <rect x="688" y="610" width="48" height="32" rx="8"/>
+      <rect x="744" y="610" width="48" height="32" rx="8"/>
+      <rect x="800" y="610" width="48" height="32" rx="8"/>
+
+      <rect x="272" y="650" width="48" height="32" rx="8"/>
+      <rect x="328" y="650" width="48" height="32" rx="8"/>
+      <rect x="384" y="650" width="48" height="32" rx="8"/>
+      <rect x="440" y="650" width="48" height="32" rx="8"/>
+      <rect x="496" y="650" width="48" height="32" rx="8"/>
+      <rect x="552" y="650" width="48" height="32" rx="8"/>
+      <rect x="608" y="650" width="48" height="32" rx="8"/>
+      <rect x="668" y="650" width="260" height="32" rx="8"/>
+    </g>
+
+    <g fill="#a08c78" font-size="10" font-weight="500" text-anchor="middle">
+      <text x="348" y="590">Q</text><text x="404" y="590">W</text><text x="460" y="590">E</text><text x="516" y="590">R</text><text x="572" y="590">T</text><text x="628" y="590">Y</text><text x="684" y="590">U</text><text x="740" y="590">I</text><text x="796" y="590">O</text><text x="852" y="590">P</text>
+      <text x="376" y="630">A</text><text x="432" y="630">S</text><text x="488" y="630">D</text><text x="544" y="630">F</text><text x="600" y="630">G</text><text x="656" y="630">H</text><text x="712" y="630">J</text><text x="768" y="630">K</text><text x="824" y="630">L</text>
+      <text x="296" y="670">Z</text><text x="352" y="670">X</text><text x="408" y="670">C</text><text x="464" y="670">V</text><text x="520" y="670">B</text><text x="576" y="670">N</text><text x="632" y="670">M</text><text x="798" y="670" font-size="9.5" letter-spacing="1.2">SPACE</text>
+    </g>
+  </g>
+</svg>

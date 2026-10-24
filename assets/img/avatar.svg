@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 480" width="480" height="480" role="img" aria-label="Abstract avatar placeholder">
+  <defs>
+    <radialGradient id="av-glow" cx="50%" cy="36%" r="66%">
+      <stop offset="0" stop-color="#f7d9b4" stop-opacity=".5"/>
+      <stop offset=".55" stop-color="#c99763" stop-opacity=".14"/>
+      <stop offset="1" stop-color="#17171a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="av-star" x1="120" y1="100" x2="360" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff7ea"/>
+      <stop offset=".55" stop-color="#f0c9a2"/>
+      <stop offset="1" stop-color="#d2965f"/>
+    </linearGradient>
+    <linearGradient id="av-ring" x1="70" y1="70" x2="410" y2="410" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f0c9a2" stop-opacity=".55"/>
+      <stop offset=".55" stop-color="#f0c9a2" stop-opacity=".06"/>
+      <stop offset="1" stop-color="#9fb5ff" stop-opacity=".35"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="480" fill="#18181c"/>
+  <circle cx="240" cy="240" r="232" fill="url(#av-glow)"/>
+
+  <g fill="none" stroke="url(#av-ring)">
+    <circle cx="240" cy="240" r="176"/>
+    <ellipse cx="240" cy="240" rx="208" ry="126" transform="rotate(-24 240 240)" stroke-dasharray="2 11"/>
+  </g>
+
+  <circle cx="240" cy="240" r="142" fill="#1e1e23" stroke="#34343c"/>
+  <path d="M240 126c9.2 43.8 27 61.6 70.8 70.8-43.8 9.2-61.6 27-70.8 70.8-9.2-43.8-27-61.6-70.8-70.8 43.8-9.2 61.6-27 70.8-70.8Z" fill="url(#av-star)"/>
+
+  <circle cx="374" cy="142" r="9" fill="#f0c9a2"/>
+  <circle cx="374" cy="142" r="20" fill="none" stroke="#f0c9a2" stroke-opacity=".24"/>
+  <circle cx="118" cy="352" r="5.5" fill="#8ba7ff" fill-opacity=".8"/>
+</svg>

@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" width="1200" height="750" role="img" aria-label="Lumen AI study companion interface">
+  <defs>
+    <linearGradient id="lm-bg" x1="0" y1="0" x2="1200" y2="750" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0f0f13"/>
+      <stop offset="1" stop-color="#19191f"/>
+    </linearGradient>
+    <linearGradient id="lm-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fff4e4"/>
+      <stop offset=".55" stop-color="#f0c9a2"/>
+      <stop offset="1" stop-color="#d59a64"/>
+    </linearGradient>
+    <linearGradient id="lm-avatar" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#e7c19d"/>
+      <stop offset="1" stop-color="#8a6547"/>
+    </linearGradient>
+    <filter id="lm-shadow" x="-20%" y="-20%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="28" stdDeviation="32" flood-color="#000000" flood-opacity=".5"/>
+    </filter>
+    <clipPath id="lm-window">
+      <rect x="80" y="72" width="1040" height="606" rx="24"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1200" height="750" fill="url(#lm-bg)"/>
+  <circle cx="1060" cy="60" r="330" fill="#f0c9a2" opacity=".075"/>
+  <circle cx="110" cy="730" r="300" fill="#8ba7ff" opacity=".05"/>
+
+  <g filter="url(#lm-shadow)">
+    <rect x="80" y="72" width="1040" height="606" rx="24" fill="#1b1b20" stroke="#303038"/>
+  </g>
+
+  <g clip-path="url(#lm-window)" font-family="Segoe UI, Arial, Helvetica, sans-serif">
+    <!-- window chrome -->
+    <circle cx="112" cy="101" r="5.5" fill="#f17f6e"/>
+    <circle cx="131" cy="101" r="5.5" fill="#e8b56e"/>
+    <circle cx="150" cy="101" r="5.5" fill="#7fc99c"/>
+    <rect x="380" y="84" width="440" height="33" rx="16.5" fill="#232329" stroke="#34343c"/>
+    <text x="600" y="105" fill="#8d8880" font-size="13" text-anchor="middle" letter-spacing=".4">lumen.app / workspace</text>
+    <circle cx="1070" cy="101" r="13" fill="#26262d" stroke="#383840"/>
+    <path d="M1064 101h12M1070 95v12" stroke="#8d8880" stroke-width="1.4" stroke-linecap="round"/>
+    <line x1="80" y1="132" x2="1120" y2="132" stroke="#2b2b33"/>
+    <line x1="310" y1="132" x2="310" y2="678" stroke="#2b2b33"/>
+
+    <!-- sidebar -->
+    <path d="M116 152c1.6 7.8 4.2 10.4 12 12-7.8 1.6-10.4 4.2-12 12-1.6-7.8-4.2-10.4-12-12 7.8-1.6 10.4-4.2 12-12Z" fill="#f0c9a2"/>
+    <text x="138" y="173" fill="#f4ede2" font-size="25" font-weight="600" letter-spacing="-.6">lumen</text>
+
+    <text x="104" y="219" fill="#6f6b66" font-size="10" font-weight="600" letter-spacing="1.7">WORKSPACE</text>
+    <rect x="100" y="232" width="190" height="44" rx="12" fill="#2a2723" stroke="#453b30"/>
+    <circle cx="122" cy="254" r="5.5" fill="#f0c9a2"/>
+    <text x="140" y="259" fill="#f2e9dd" font-size="14" font-weight="500">Study space</text>
+
+    <circle cx="122" cy="309" r="5.5" fill="none" stroke="#8c877f" stroke-width="1.5"/>
+    <text x="140" y="314" fill="#a8a29a" font-size="14">Library</text>
+
+    <rect x="117" y="342" width="10" height="12" rx="2" fill="none" stroke="#8c877f" stroke-width="1.5"/>
+    <text x="140" y="353" fill="#a8a29a" font-size="14">Flashcards</text>
+
+    <path d="M117 387h10M117 393h7M117 399h10" stroke="#8c877f" stroke-width="1.5" stroke-linecap="round"/>
+    <text x="140" y="397" fill="#a8a29a" font-size="14">Progress</text>
+
+    <rect x="100" y="586" width="190" height="64" rx="12" fill="#232329" stroke="#303038"/>
+    <circle cx="128" cy="618" r="17" fill="url(#lm-avatar)"/>
+    <circle cx="128" cy="618" r="17" fill="none" stroke="#f0c9a2" stroke-opacity=".35"/>
+    <text x="154" y="615" fill="#e8e0d4" font-size="13" font-weight="500">Alex Morgan</text>
+    <text x="154" y="634" fill="#807b74" font-size="11">Free plan · 8 credits</text>
+
+    <!-- main header -->
+    <text x="344" y="174" fill="#7e7972" font-size="12.5">Workspace <tspan fill="#57534e">/</tspan> Biology</text>
+    <text x="344" y="239" fill="#f4ede2" font-size="43" font-weight="600" letter-spacing="-1.4">Good evening, Alex.</text>
+    <text x="344" y="277" fill="#918b82" font-size="18">What would you like to understand today?</text>
+
+    <!-- prompt -->
+    <rect x="344" y="305" width="716" height="86" rx="18" fill="#242429" stroke="#36363e"/>
+    <circle cx="380" cy="348" r="17" fill="#f0c9a2" fill-opacity=".12"/>
+    <path d="M380 338c.8 4.6 2.6 6.4 7.2 7.2-4.6.8-6.4 2.6-7.2 7.2-.8-4.6-2.6-6.4-7.2-7.2 4.6-.8 6.4-2.6 7.2-7.2Z" fill="#f0c9a2"/>
+    <text x="412" y="354" fill="#7f7a73" font-size="17">Explain action potentials like I'm 15…</text>
+    <circle cx="1020" cy="348" r="21" fill="url(#lm-accent)"/>
+    <path d="M1013 355l9-9M1014 346h8v8" fill="none" stroke="#241a10" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- suggestions -->
+    <text x="344" y="431" fill="#6f6b66" font-size="10" font-weight="600" letter-spacing="1.6">SUGGESTED FOR YOU</text>
+
+    <rect x="344" y="448" width="224" height="160" rx="16" fill="#202026" stroke="#303038"/>
+    <circle cx="372" cy="480" r="17" fill="#f0c9a2" fill-opacity=".12"/>
+    <rect x="365" y="471" width="13" height="17" rx="2.5" fill="none" stroke="#f0c9a2" stroke-width="1.5"/>
+    <path d="M368 476h7M368 480h7M368 484h4" stroke="#f0c9a2" stroke-width="1.2" stroke-linecap="round"/>
+    <text x="364" y="530" fill="#eee7dc" font-size="15.5" font-weight="500">Summarize a PDF</text>
+    <text x="364" y="552" fill="#8b867f" font-size="12">Drop in your notes or paper</text>
+
+    <rect x="590" y="448" width="224" height="160" rx="16" fill="#202026" stroke="#303038"/>
+    <circle cx="618" cy="480" r="17" fill="#a78bfa" fill-opacity=".14"/>
+    <path d="M618 469c1 5.8 3.2 8 9 9-5.8 1-8 3.2-9 9-1-5.8-3.2-8-9-9 5.8-1 8-3.2 9-9Z" fill="#b8a3ff"/>
+    <text x="610" y="530" fill="#eee7dc" font-size="15.5" font-weight="500">Quiz me</text>
+    <text x="610" y="552" fill="#8b867f" font-size="12">Ten questions, no pressure</text>
+
+    <rect x="836" y="448" width="224" height="160" rx="16" fill="#202026" stroke="#303038"/>
+    <circle cx="864" cy="480" r="17" fill="#7fc99c" fill-opacity=".13"/>
+    <path d="M857 489v-6M864 489v-12M871 489v-8" stroke="#8dd7ae" stroke-width="2" stroke-linecap="round"/>
+    <text x="856" y="530" fill="#eee7dc" font-size="15.5" font-weight="500">Track progress</text>
+    <text x="856" y="552" fill="#8b867f" font-size="12">See what actually sticks</text>
+
+    <!-- weekly progress -->
+    <text x="344" y="656" fill="#77726b" font-size="12">This week</text>
+    <rect x="430" y="650" width="500" height="6" rx="3" fill="#2c2c33"/>
+    <rect x="430" y="650" width="300" height="6" rx="3" fill="#f0c9a2"/>
+    <text x="1060" y="656" fill="#77726b" font-size="12" text-anchor="end">4 of 7 sessions</text>
+  </g>
+</svg>
