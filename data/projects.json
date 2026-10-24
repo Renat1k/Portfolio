@@ -17,7 +17,7 @@
     "./assets/img/projects/bot-screen.png"
   ],
   "tags": ["Python", "python-telegram-bot", "Flask", "SQLite", "Render"],
-  "demo": "https://t.me/твой_бот_юзернейм",
+  "demo": "https://t.me/fluentFable_bot",
   "repo": "https://github.com/Renat1k/FluentFable_bot"
 }
 ]
