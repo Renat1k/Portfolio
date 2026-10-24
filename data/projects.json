@@ -14,8 +14,10 @@
   "description": "Telegram-бот для приёма заявок на услуги: выбор языка (RU/EN), пошаговая форма (услуга, бюджет, описание, срок), уведомления админу о новых заказах, админ-панель со статусами (новые, в обработке, завершённые) и возможность клиента отменить заявку.",
   "avatar": "./assets/img/projects/bot-avatar.png",
   "screenshots": [
-    "./assets/img/projects/bot-screen.png"
-  ],
+  "./assets/img/projects/bot-menu.png",
+  "./assets/img/projects/bot-form.png",
+  "./assets/img/projects/bot-notification.png"
+],
   "tags": ["Python", "python-telegram-bot", "Flask", "SQLite", "Render"],
   "demo": "https://t.me/fluentFable_bot",
   "repo": "https://github.com/Renat1k/FluentFable_bot"
