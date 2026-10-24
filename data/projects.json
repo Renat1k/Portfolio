@@ -1,10 +1,25 @@
-﻿[
+[
   {
+    "type": "site",
     "title": "English Reading Lab",
     "description": "An interactive web lesson showcase featuring word-by-word TTS speech highlighting, double-context vocabulary lookup, comprehension quiz, and SRS flashcards.",
     "image": "./assets/img/projects/reading-lab.png",
     "tags": ["Vanilla JS", "Web Speech API", "CSS Variables", "LocalStorage"],
     "demo": "https://english-reading-lab.pages.dev",
     "repo": "https://github.com/Renat1k/english-reading-lab"
+  },
+  {
+    "type": "bot",
+    "title": "LingoBuddy",
+    "description": "A Telegram bot for daily English practice: it sends short reading tasks, checks answers, keeps a personal vocabulary list, and schedules spaced-repetition reminders.",
+    "avatar": "./assets/img/avatar.svg",
+    "screenshots": [
+      "./assets/img/projects/reading-lab.png",
+      "./assets/img/projects/chroma.svg",
+      "./assets/img/projects/typeflow.svg"
+    ],
+    "tags": ["Python", "aiogram", "OpenAI API", "SQLite"],
+    "demo": "https://t.me/your_bot",
+    "repo": "https://github.com/Renat1k/lingobuddy-bot"
   }
 ]

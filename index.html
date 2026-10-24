@@ -132,13 +132,19 @@
           <h2 id="projects-title">Projects</h2>
         </div>
         <div class="section-meta">
-          <span class="count-pill" id="project-count">03 projects</span>
+          <span class="count-pill" id="project-count">—</span>
           <a class="section-link" id="github-link" href="https://github.com/yourhandle" target="_blank" rel="noopener noreferrer">
             GitHub
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 17 17 7M9 7h8v8"/></svg>
           </a>
         </div>
       </header>
+
+      <div class="project-filters" id="project-filters" role="group" aria-label="Фильтр проектов" hidden>
+        <button class="filter-btn is-active" type="button" data-filter="all" aria-pressed="true">Все</button>
+        <button class="filter-btn" type="button" data-filter="site" aria-pressed="false">Сайты</button>
+        <button class="filter-btn" type="button" data-filter="bot" aria-pressed="false">Боты</button>
+      </div>
 
       <div class="projects-grid" id="projects-grid" aria-busy="true"></div>
       <div class="projects-state" id="projects-state" hidden></div>
@@ -179,6 +185,47 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
     </a>
   </footer>
+
+  <div class="gallery-modal" id="gallery-modal" hidden>
+    <div class="gallery-backdrop" id="gallery-backdrop" aria-hidden="true"></div>
+    <div class="gallery-dialog" role="dialog" aria-modal="true" aria-labelledby="gallery-title" tabindex="-1">
+      <div class="gallery-head">
+        <div>
+          <p class="gallery-kicker" id="gallery-kicker">Telegram bot · скриншоты</p>
+          <h2 id="gallery-title">Скриншоты</h2>
+        </div>
+        <button class="gallery-close" id="gallery-close" type="button" aria-label="Закрыть галерею">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false">
+            <path d="M6 6l12 12M18 6 6 18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="gallery-viewport">
+        <button class="gallery-nav gallery-prev" id="gallery-prev" type="button" aria-label="Предыдущий скриншот">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M15 5l-7 7 7 7"/>
+          </svg>
+        </button>
+
+        <div class="gallery-image-wrap">
+          <img class="gallery-image" id="gallery-image" alt="" decoding="async">
+          <p class="gallery-error" id="gallery-error" hidden>Не удалось загрузить скриншот.</p>
+        </div>
+
+        <button class="gallery-nav gallery-next" id="gallery-next" type="button" aria-label="Следующий скриншот">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <path d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="gallery-bottom">
+        <span class="gallery-counter" id="gallery-counter" aria-live="polite">1 / 1</span>
+        <div class="gallery-thumbs" id="gallery-thumbs" aria-label="Все скриншоты"></div>
+      </div>
+    </div>
+  </div>
 
   <script src="./assets/js/main.js" defer></script>
 </body>

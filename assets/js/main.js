@@ -26,6 +26,8 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>',
     empty:
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"/><path d="m4 7.5 8 4.5 8-4.5M12 12v9"/></svg>',
+    gallery:
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="8.5" cy="10" r="1.5"/><path d="m21 15-5-5L7 19"/></svg>',
   };
 
   const SOCIAL_META = {
@@ -37,10 +39,18 @@
   const state = {
     profile: null,
     projects: [],
+    activeFilter: "all",
+    gallery: {
+      project: null,
+      images: [],
+      index: 0,
+      opener: null,
+    },
     revealObserver: null,
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
   /* ---------- Small helpers ---------- */
 
@@ -350,10 +360,12 @@
   async function loadProjects() {
     const grid = $("#projects-grid");
     const stateBox = $("#projects-state");
+    const filterBar = $("#project-filters");
     if (!grid) return;
 
     grid.setAttribute("aria-busy", "true");
     if (stateBox) stateBox.hidden = true;
+    if (filterBar) filterBar.hidden = true;
     renderSkeletons(grid);
 
     try {
@@ -370,6 +382,7 @@
       renderProjects(projects);
     } catch (error) {
       console.error("Could not load projects:", error);
+      if (filterBar) filterBar.hidden = true;
       grid.replaceChildren();
       grid.setAttribute("aria-busy", "false");
       setProjectCount(null);
@@ -382,6 +395,8 @@
     const title = text(item.title);
     if (!title) return null;
 
+    const type = item.type === "bot" ? "bot" : "site";
+
     const tags = Array.isArray(item.tags)
       ? item.tags
           .filter((tag) => typeof tag === "string" && tag.trim())
@@ -389,10 +404,20 @@
           .slice(0, 6)
       : [];
 
+    const screenshots = Array.isArray(item.screenshots)
+      ? item.screenshots
+          .map((screenshot) => toUrl(screenshot))
+          .filter(Boolean)
+          .slice(0, 12)
+      : [];
+
     return {
+      type,
       title,
       description: text(item.description),
       image: toUrl(item.image),
+      avatar: toUrl(item.avatar),
+      screenshots,
       tags,
       demo: toUrl(item.demo),
       repo: toUrl(item.repo),
@@ -421,13 +446,14 @@
   function renderProjects(projects) {
     const grid = $("#projects-grid");
     const stateBox = $("#projects-state");
+    const filterBar = $("#project-filters");
     if (!grid) return;
 
-    setProjectCount(projects.length);
-
     if (!projects.length) {
+      if (filterBar) filterBar.hidden = true;
       grid.replaceChildren();
       grid.setAttribute("aria-busy", "false");
+      setProjectCount(0);
       showProjectsEmpty();
       return;
     }
@@ -440,16 +466,21 @@
     grid.replaceChildren(fragment);
     grid.setAttribute("aria-busy", "false");
     if (stateBox) stateBox.hidden = true;
+    if (filterBar) filterBar.hidden = false;
     observeReveals(grid);
+    applyFilter(state.activeFilter);
   }
 
   function createProjectCard(project, index) {
     const card = document.createElement("article");
     card.className = "project-card reveal";
+    card.dataset.type = project.type;
     card.style.setProperty("--i", String(index));
 
+    const isBot = project.type === "bot";
     const media = document.createElement("div");
     media.className = "project-media";
+    if (isBot) media.classList.add("project-media--bot");
 
     const hue = hashHue(project.title);
     media.style.setProperty("--hue", String(hue));
@@ -461,7 +492,34 @@
     fallback.style.setProperty("--hue", String(hue));
     media.append(fallback);
 
-    if (project.image) {
+    if (isBot) {
+      if (project.avatar) {
+        const avatarWrap = document.createElement("div");
+        avatarWrap.className = "project-bot-avatar";
+
+        const avatar = document.createElement("img");
+        avatar.src = project.avatar;
+        avatar.alt = `${project.title} — avatar`;
+        avatar.loading = "lazy";
+        avatar.decoding = "async";
+        avatar.addEventListener(
+          "error",
+          () => {
+            avatarWrap.remove();
+          },
+          { once: true }
+        );
+
+        avatarWrap.append(avatar);
+        media.append(avatarWrap);
+      }
+
+      const botMark = document.createElement("span");
+      botMark.className = "project-bot-mark";
+      botMark.setAttribute("aria-hidden", "true");
+      botMark.innerHTML = ICONS.telegram;
+      media.append(botMark);
+    } else if (project.image) {
       const image = document.createElement("img");
       image.src = project.image;
       image.alt = `${project.title} — project preview`;
@@ -476,6 +534,11 @@
       );
       media.append(image);
     }
+
+    const kind = document.createElement("span");
+    kind.className = `project-kind ${isBot ? "is-bot" : "is-site"}`;
+    kind.textContent = isBot ? "Бот" : "Сайт";
+    media.append(kind);
 
     const indexBadge = document.createElement("span");
     indexBadge.className = "project-index";
@@ -522,9 +585,25 @@
       demo.href = project.demo;
       demo.target = "_blank";
       demo.rel = "noopener noreferrer";
-      demo.setAttribute("aria-label", `${project.title} — live demo (opens in a new tab)`);
-      demo.innerHTML = `<span>Live Demo</span><span class="btn-icon" aria-hidden="true">${ICONS.external}</span>`;
+      demo.setAttribute(
+        "aria-label",
+        `${project.title} — ${isBot ? "открыть бота" : "открыть сайт"} (откроется в новой вкладке)`
+      );
+      demo.innerHTML = isBot
+        ? `<span>Открыть бота</span><span class="btn-icon" aria-hidden="true">${ICONS.telegram}</span>`
+        : `<span>Открыть сайт</span><span class="btn-icon" aria-hidden="true">${ICONS.external}</span>`;
       actions.append(demo);
+    }
+
+    if (isBot && project.screenshots.length) {
+      const gallery = document.createElement("button");
+      gallery.type = "button";
+      gallery.className = "btn btn-ghost btn-sm";
+      gallery.setAttribute("aria-haspopup", "dialog");
+      gallery.setAttribute("aria-label", `${project.title} — скриншоты`);
+      gallery.innerHTML = `<span class="btn-icon" aria-hidden="true">${ICONS.gallery}</span><span>Скриншоты</span>`;
+      gallery.addEventListener("click", () => openGallery(project, gallery));
+      actions.append(gallery);
     }
 
     if (project.repo) {
@@ -533,8 +612,8 @@
       repo.href = project.repo;
       repo.target = "_blank";
       repo.rel = "noopener noreferrer";
-      repo.setAttribute("aria-label", `${project.title} — source code on GitHub (opens in a new tab)`);
-      repo.innerHTML = `<span class="btn-icon" aria-hidden="true">${ICONS.github}</span><span>GitHub</span>`;
+      repo.setAttribute("aria-label", `${project.title} — репозиторий (откроется в новой вкладке)`);
+      repo.innerHTML = `<span class="btn-icon" aria-hidden="true">${ICONS.github}</span><span>Репозиторий</span>`;
       actions.append(repo);
     }
 
@@ -542,6 +621,38 @@
 
     card.append(media, body);
     return card;
+  }
+
+  function applyFilter(filter) {
+    const allowed = ["all", "site", "bot"];
+    const nextFilter = allowed.includes(filter) ? filter : "all";
+    state.activeFilter = nextFilter;
+
+    $$("#project-filters .filter-btn").forEach((button) => {
+      const active = button.dataset.filter === nextFilter;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+
+    let visible = 0;
+    $$("#projects-grid .project-card[data-type]").forEach((card) => {
+      const show = nextFilter === "all" || card.dataset.type === nextFilter;
+      card.hidden = !show;
+      if (show) visible += 1;
+    });
+
+    setProjectCount(visible);
+  }
+
+  function setupFilters() {
+    const filterBar = $("#project-filters");
+    if (!filterBar) return;
+
+    filterBar.addEventListener("click", (event) => {
+      const button = event.target.closest(".filter-btn[data-filter]");
+      if (!button) return;
+      applyFilter(button.dataset.filter);
+    });
   }
 
   function setProjectCount(count) {
@@ -605,7 +716,7 @@
 
     const message = document.createElement("p");
     message.textContent =
-      "Add your first project to data/projects.json — a title is enough, and image, tags, demo and repo links are optional.";
+      "Add your first project to data/projects.json — a title is enough; add type \"site\" or \"bot\", media, tags and links as needed.";
 
     box.append(icon, title, message);
     box.removeAttribute("role");
@@ -636,12 +747,160 @@
     items.forEach((item) => state.revealObserver.observe(item));
   }
 
+  /* ---------- Screenshot gallery ---------- */
+
+  function setupGallery() {
+    const modal = $("#gallery-modal");
+    if (!modal) return;
+
+    const close = $("#gallery-close");
+    const backdrop = $("#gallery-backdrop");
+    const prev = $("#gallery-prev");
+    const next = $("#gallery-next");
+
+    if (close) close.addEventListener("click", closeGallery);
+    if (backdrop) backdrop.addEventListener("click", closeGallery);
+    if (prev) prev.addEventListener("click", () => moveGallery(-1));
+    if (next) next.addEventListener("click", () => moveGallery(1));
+
+    document.addEventListener("keydown", (event) => {
+      if (modal.hidden) return;
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeGallery();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        moveGallery(-1);
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        moveGallery(1);
+      }
+    });
+  }
+
+  function openGallery(project, opener) {
+    const modal = $("#gallery-modal");
+    if (!modal || !project.screenshots.length) return;
+
+    state.gallery = {
+      project,
+      images: project.screenshots,
+      index: 0,
+      opener: opener || null,
+    };
+
+    setText("#gallery-kicker", "Telegram bot · скриншоты");
+    setText("#gallery-title", project.title);
+    buildGalleryThumbs();
+    setGalleryIndex(0);
+
+    modal.hidden = false;
+    document.body.classList.add("gallery-open");
+    document.body.style.overflow = "hidden";
+
+    const close = $("#gallery-close");
+    if (close) close.focus({ preventScroll: true });
+  }
+
+  function closeGallery() {
+    const modal = $("#gallery-modal");
+    if (!modal || modal.hidden) return;
+
+    const opener = state.gallery.opener;
+    modal.hidden = true;
+    document.body.classList.remove("gallery-open");
+    document.body.style.overflow = "";
+    state.gallery = { project: null, images: [], index: 0, opener: null };
+
+    if (opener && typeof opener.focus === "function") {
+      opener.focus({ preventScroll: true });
+    }
+  }
+
+  function moveGallery(step) {
+    if (!state.gallery.images.length) return;
+    setGalleryIndex(state.gallery.index + step);
+  }
+
+  function setGalleryIndex(index) {
+    const total = state.gallery.images.length;
+    if (!total) return;
+
+    const next = ((index % total) + total) % total;
+    state.gallery.index = next;
+
+    const image = $("#gallery-image");
+    const error = $("#gallery-error");
+    const imageSrc = state.gallery.images[next];
+
+    if (image) {
+      image.hidden = false;
+      image.src = imageSrc;
+      image.alt = `${state.gallery.project.title} — скриншот ${next + 1}`;
+      image.onload = () => {
+        if (image.src === imageSrc) {
+          const errorNode = $("#gallery-error");
+          if (errorNode) errorNode.hidden = true;
+        }
+      };
+      image.onerror = () => {
+        if (image.src !== imageSrc) return;
+        image.hidden = true;
+        const errorNode = $("#gallery-error");
+        if (errorNode) errorNode.hidden = false;
+      };
+    }
+
+    if (error) error.hidden = true;
+    setText("#gallery-counter", `${next + 1} / ${total}`);
+
+    const prev = $("#gallery-prev");
+    const nextButton = $("#gallery-next");
+    const thumbs = $("#gallery-thumbs");
+    if (prev) prev.hidden = total <= 1;
+    if (nextButton) nextButton.hidden = total <= 1;
+    if (thumbs) thumbs.hidden = total <= 1;
+
+    $$("#gallery-thumbs .gallery-thumb").forEach((thumb, thumbIndex) => {
+      const active = thumbIndex === next;
+      thumb.classList.toggle("is-active", active);
+      thumb.setAttribute("aria-current", active ? "true" : "false");
+    });
+  }
+
+  function buildGalleryThumbs() {
+    const thumbs = $("#gallery-thumbs");
+    if (!thumbs) return;
+
+    thumbs.replaceChildren();
+    state.gallery.images.forEach((src, index) => {
+      const thumb = document.createElement("button");
+      thumb.type = "button";
+      thumb.className = "gallery-thumb";
+      thumb.setAttribute("aria-label", `Скриншот ${index + 1}`);
+      thumb.setAttribute("aria-current", "false");
+
+      const image = document.createElement("img");
+      image.src = src;
+      image.alt = "";
+      image.loading = "lazy";
+      image.decoding = "async";
+      image.addEventListener("error", () => image.remove(), { once: true });
+
+      thumb.append(image);
+      thumb.addEventListener("click", () => setGalleryIndex(index));
+      thumbs.append(thumb);
+    });
+  }
+
   /* ---------- Boot ---------- */
 
   function setup() {
     setupTheme();
     setupHeader();
     setupRevealObserver();
+    setupFilters();
+    setupGallery();
 
     const year = $("#year");
     if (year) year.textContent = String(new Date().getFullYear());
