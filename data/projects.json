@@ -2,7 +2,7 @@
   {
     "title": "English Reading Lab",
     "description": "An interactive web lesson showcase featuring word-by-word TTS speech highlighting, double-context vocabulary lookup, comprehension quiz, and SRS flashcards.",
-    "image": "./assets/img/projects/typeflow.svg",
+    "image": "./assets/img/projects/reading-lab.png",
     "tags": ["Vanilla JS", "Web Speech API", "CSS Variables", "LocalStorage"],
     "demo": "https://english-reading-lab.pages.dev",
     "repo": "https://github.com/Renat1k/english-reading-lab"
