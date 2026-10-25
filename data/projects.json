@@ -1,5 +1,6 @@
 ﻿[
   {
+    "type": "site",
     "title": "English Reading Lab",
     "description": "An interactive web lesson showcase featuring word-by-word TTS speech highlighting, double-context vocabulary lookup, comprehension quiz, and SRS flashcards.",
     "image": "./assets/img/projects/reading-lab.png",
@@ -8,6 +9,7 @@
     "repo": "https://github.com/Renat1k/english-reading-lab"
   },
   {
+    "type": "site",
     "title": "Lumiere",
     "description": "A sleek modern web project featuring high-end visual design, responsive layout, and interactive UI components.",
     "image": "./assets/img/projects/lumiere.png",
@@ -16,19 +18,29 @@
     "repo": "https://github.com/Renat1k/lumiere"
   },
   {
+    "type": "bot",
     "title": "FluentFable Bot",
-    "description": "A Telegram intake bot with multi-language support (RU/EN), step-by-step booking form (service, budget, timeline), admin order management, and status notifications.",
-    "image": "./assets/img/projects/bot-avatar.png",
-    "tags": ["Python", "python-telegram-bot", "Flask", "SQLite"],
+    "description": "Telegram-бот для приёма заявок на услуги: выбор языка (RU/EN), пошаговая форма (услуга, бюджет, описание, срок), уведомления админу о новых заказах, админ-панель со статусами (новые, в обработке, завершённые) и возможность клиента отменить заявку.",
+    "avatar": "./assets/img/projects/bot-avatar.png",
+    "screenshots": [
+      "./assets/img/projects/bot-menu.png",
+      "./assets/img/projects/bot-form.png",
+      "./assets/img/projects/bot-notification.png"
+    ],
+    "tags": ["Python", "python-telegram-bot", "Flask", "SQLite", "Render"],
     "demo": "https://t.me/fluentFable_bot",
     "repo": "https://github.com/Renat1k/FluentFable_bot"
   },
   {
+    "type": "bot",
     "title": "Barber Studio Booking Bot",
-    "description": "An automated Telegram bot for barbershops and salons featuring seamless online appointment scheduling, service & price catalog, interactive time-slot picker, and booking management.",
-    "image": "./assets/img/projects/bot_DEMO-avatar.png",
+    "description": "Telegram-бот для автоматизации онлайн-записи в салон/перукарню: перегляд послуг та цін, вибір зручної дати та часу, надсилання заявки та перегляд власних записів.",
+    "avatar": "./assets/img/projects/bot_DEMO-avatar.png",
+    "screenshots": [
+      "./assets/img/projects/bot_DEMO-menu.png"
+    ],
     "tags": ["Python", "python-telegram-bot", "Telegram API", "Booking System"],
     "demo": "https://t.me/demonstratet_bot",
-    "repo": "https://github.com/Renat1k/demonstratet_bot"
+    "repo": "https://github.com/Renat1k/Demo_bot"
   }
 ]
