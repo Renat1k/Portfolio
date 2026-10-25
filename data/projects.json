@@ -14,5 +14,13 @@
     "tags": ["HTML5/CSS3", "Vanilla JS", "UI/UX"],
     "demo": "https://lumiere-68t.pages.dev",
     "repo": "https://github.com/Renat1k/lumiere"
+  },
+  {
+    "title": "FluentFable Bot",
+    "description": "A Telegram intake bot with multi-language support (RU/EN), step-by-step booking form (service, budget, timeline), admin order management, and status notifications.",
+    "image": "./assets/img/projects/bot-avatar.png",
+    "tags": ["Python", "python-telegram-bot", "Flask", "SQLite"],
+    "demo": "https://t.me/fluentFable_bot",
+    "repo": "https://github.com/Renat1k/FluentFable_bot"
   }
 ]
