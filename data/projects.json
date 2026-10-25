@@ -22,5 +22,13 @@
     "tags": ["Python", "python-telegram-bot", "Flask", "SQLite"],
     "demo": "https://t.me/fluentFable_bot",
     "repo": "https://github.com/Renat1k/FluentFable_bot"
+  },
+  {
+    "title": "Barber Studio Booking Bot",
+    "description": "An automated Telegram bot for barbershops and salons featuring seamless online appointment scheduling, service & price catalog, interactive time-slot picker, and booking management.",
+    "image": "./assets/img/projects/bot_DEMO-avatar.png",
+    "tags": ["Python", "python-telegram-bot", "Telegram API", "Booking System"],
+    "demo": "https://t.me/demonstratet_bot",
+    "repo": "https://github.com/Renat1k/demonstratet_bot"
   }
 ]
