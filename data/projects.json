@@ -1,6 +1,5 @@
-[
+﻿[
   {
-    "type": "site",
     "title": "English Reading Lab",
     "description": "An interactive web lesson showcase featuring word-by-word TTS speech highlighting, double-context vocabulary lookup, comprehension quiz, and SRS flashcards.",
     "image": "./assets/img/projects/reading-lab.png",
@@ -8,18 +7,12 @@
     "demo": "https://english-reading-lab.pages.dev",
     "repo": "https://github.com/Renat1k/english-reading-lab"
   },
-{
-  "type": "bot",
-  "title": "FluentFable Bot",
-  "description": "Telegram-бот для приёма заявок на услуги: выбор языка (RU/EN), пошаговая форма (услуга, бюджет, описание, срок), уведомления админу о новых заказах, админ-панель со статусами (новые, в обработке, завершённые) и возможность клиента отменить заявку.",
-  "avatar": "./assets/img/projects/bot-avatar.png",
-  "screenshots": [
-  "./assets/img/projects/bot-menu.png",
-  "./assets/img/projects/bot-form.png",
-  "./assets/img/projects/bot-notification.png"
-],
-  "tags": ["Python", "python-telegram-bot", "Flask", "SQLite", "Render"],
-  "demo": "https://t.me/fluentFable_bot",
-  "repo": "https://github.com/Renat1k/FluentFable_bot"
-}
+  {
+    "title": "Lumiere",
+    "description": "A sleek modern web project featuring high-end visual design, responsive layout, and interactive UI components.",
+    "image": "./assets/img/projects/lumiere.png",
+    "tags": ["HTML5/CSS3", "Vanilla JS", "UI/UX"],
+    "demo": "https://lumiere-68t.pages.dev",
+    "repo": "https://github.com/Renat1k/lumiere"
+  }
 ]
