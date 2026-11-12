@@ -18,6 +18,14 @@
     "repo": "https://github.com/Renat1k/lumiere"
   },
   {
+    "type": "site",
+    "title": "Nika — Ribbons & Fittings",
+    "description": "A polished e-commerce demo for a ribbon and fittings store: a nine-product catalog with search, sorting and filters, quick view, persistent cart, checkout flow, local order history, and light/dark themes.",
+    "image": "./assets/img/projects/nika-demo.png",
+    "tags": ["React", "TypeScript", "Vite", "E-commerce"],
+    "demo": "https://nika-demo.pages.dev/"
+  },
+  {
     "type": "bot",
     "title": "FluentFable Bot",
     "description": "Telegram-бот для приёма заявок на услуги: выбор языка (RU/EN), пошаговая форма (услуга, бюджет, описание, срок), уведомления админу о новых заказах, админ-панель со статусами (новые, в обработке, завершённые) и возможность клиента отменить заявку.",
