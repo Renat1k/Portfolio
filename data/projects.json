@@ -1,6 +1,21 @@
 ﻿[
   {
     "type": "site",
+    "title": "Mriia Beauty Studio",
+    "description": "A polished demo website for a fictional Kyiv beauty studio: 14 services with search and category filters, a filterable team directory, and a three-step demo booking flow with schedule validation, local saves and calendar export. The cream-toned interface features custom pre-rendered 3D clay illustrations.",
+    "image": "./assets/img/projects/mriia-home.png",
+    "screenshots": [
+      "./assets/img/projects/mriia-home.webp",
+      "./assets/img/projects/mriia-services.webp",
+      "./assets/img/projects/mriia-team.webp",
+      "./assets/img/projects/mriia-booking.webp"
+    ],
+    "tags": ["React 19", "TypeScript", "Vite", "React Router", "Three.js", "Playwright"],
+    "demo": "https://mriia-beauty-demo.pages.dev/",
+    "repo": "https://github.com/Renat1k/mriia-beauty-demo"
+  },
+  {
+    "type": "site",
     "title": "English Reading Lab",
     "description": "An interactive web lesson showcase featuring word-by-word TTS speech highlighting, double-context vocabulary lookup, comprehension quiz, and SRS flashcards.",
     "image": "./assets/img/projects/reading-lab.png",
