@@ -1,0 +1,16 @@
+{
+  "name": "fluentfable-portfolio",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FluentFable — Frontend & AI App Developer portfolio",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node scripts/serve.mjs",
+    "build": "node scripts/build.mjs",
+    "check": "node scripts/check.mjs",
+    "preview": "node scripts/serve.mjs --dir dist"
+  }
+}

@@ -3,3 +3,6 @@ Thumbs.db
 node_modules/
 .wrangler/
 *.log
+dist/
+test-results/
+playwright-report/
