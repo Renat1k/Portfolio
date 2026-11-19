@@ -10,6 +10,15 @@
 /projects/*
   Cache-Control: public, max-age=0, must-revalidate
 
+/uk/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/en/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/sculpture/*.glb
+  Content-Type: model/gltf-binary
+
 /data/*
   Cache-Control: public, max-age=0, must-revalidate
 

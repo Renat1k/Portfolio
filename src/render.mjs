@@ -1,208 +1,134 @@
-export const siteUrl = "https://portfolio-y5j.pages.dev";
+import { content, ui } from './copy.mjs';
+import { defaultLocale, locales, localizedPath, projectPath, siteUrl } from './site.mjs';
 
-export const slugify = (value) => value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-const escape = (value = "") => String(value).replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
-const number = (value) => String(value).padStart(2, "0");
-const asset = (value, base) => `${base}${value.replace(/^\.\//, "")}`;
-const previewImage = (value) => value.replace(/\.(png|jpe?g)$/i, ".webp");
-const category = (project) => project.type === "bot" ? "Telegram bot" : "Website";
-const language = (project) => /[а-яё]/i.test(project.description) ? ' lang="ru"' : "";
+const esc = (s = '') => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const json = x => JSON.stringify(x).replace(/</g,'\\u003c');
+const num = n => String(n).padStart(2,'0');
+const asset = s => `/${s.replace(/^(?:\.\/|\/)/,'')}`;
+const preview = s => asset(s).replace(/\.(png|jpe?g)$/i,'.webp');
+const shots = p => (p.screenshots || [p.image]).map(asset);
+const glyphs = { arrow:'M4 12h15m-6-6 6 6-6 6', external:'M6 18 18 6M7 6h11v11', down:'M12 4v16m-6-6 6 6 6-6', up:'M12 20V4m-6 6 6-6 6 6',
+  prev:'m14 5-7 7 7 7', next:'m10 5 7 7-7 7', close:'m6 6 12 12M18 6 6 18', menu:'M3 8h18M3 16h18',
+  copy:'M8 6H4v15h11v-4M8 3h11v14H8z', cube:'m12 2 9 5v10l-9 5-9-5V7zm0 10L3 7m9 5 9-5m-9 5v10', reset:'M4 10a8 8 0 1 1 1 7M4 4v6h6' };
+const icon = name => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${glyphs[name]}"/></svg>`;
+const ext = (url, label, aria) => `<a class="text-action" href="${esc(url)}" target="_blank" rel="noopener noreferrer"${aria ? ` aria-label="${esc(aria)}"` : ''}>${esc(label)}${icon('external')}</a>`;
+const tagList = (p, u) => `<ul class="tags" aria-label="${u.stack}">${p.tags.map(tag => `<li>${esc(tag)}</li>`).join('')}</ul>`;
+const iconButton = (id, label, glyph) => `<button type="button" id="${id}" class="icon-button" aria-label="${label}" title="${label}">${icon(glyph)}</button>`;
 
-const paths = {
-  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
-  external: '<path d="M6 18 18 6M6 6h12v12"/>',
-  down: '<path d="M12 4v16M6 14l6 6 6-6"/>',
-  up: '<path d="M12 20V4M6 10l6-6 6 6"/>',
-  close: '<path d="m6 6 12 12M18 6 6 18"/>',
-  previous: '<path d="m14 5-7 7 7 7"/>',
-  next: '<path d="m10 5 7 7-7 7"/>',
-  menu: '<path d="M4 8h16M4 16h16"/>',
-  copy: '<path d="M9 5H5v14h10v-4"/><path d="M9 3h10v12H9z"/>',
-  gallery: '<path d="M3 5h18v14H3z"/><path d="m3 16 6-6 5 5 3-3 4 4"/><circle cx="16" cy="9" r="1"/>',
-};
-const icon = (name, className = "icon") => `<svg class="${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${paths[name] || paths.external}</svg>`;
-const external = (href, label, className = "text-action", extra = "") => `<a class="${className}" href="${escape(href)}"${href.startsWith("mailto:") ? "" : ' target="_blank" rel="noopener noreferrer"'} ${extra}>${label}${icon("external")}</a>`;
-const socialLinks = (profile, className = "text-action") => [
-  [profile.socials.telegram, "Telegram"],
-  [profile.socials.github, "GitHub"],
-  [`mailto:${profile.socials.email}`, "Email"],
-].map(([url, label]) => external(url, label, className)).join("");
-
-function header(profile, base, isHome) {
-  const home = isHome ? "" : base;
-  return `<header class="site-header" id="site-header">
-    <div class="shell header-inner">
-      <nav class="desktop-nav" aria-label="Primary navigation">
-        <a href="${home}#projects" data-nav="projects">Projects</a>
-        <a href="${home}#about" data-nav="about">About</a>
-      </nav>
-      <button class="menu-toggle" id="menu-toggle" type="button" aria-label="Open navigation" aria-controls="menu-dialog" aria-expanded="false">${icon("menu")}<span>Menu</span></button>
-      <a class="wordmark" href="${isHome ? "#top" : base}" aria-label="${escape(profile.name)} — home">${escape(profile.name)}</a>
-      <a class="header-contact" href="${home}#contact" data-nav="contact" aria-label="Go to contact section"><span>Let’s talk</span>${icon("external")}</a>
-    </div>
+function header({ p, u, lang, route, home }) {
+  const origin = localizedPath(lang), prefix = home ? '' : origin;
+  const links = ['projects','about','contact'].map(id => `<a href="${prefix}#${id}">${u[id]}</a>`).join('');
+  const languages = locales.map(code => `<a data-language="${code}" href="${localizedPath(code,route)}" lang="${code}" hreflang="${code}" aria-label="${code === 'uk' ? 'Українська' : 'English'}"${code === lang ? ' aria-current="true"' : ''}>${code === 'uk' ? 'UA' : 'EN'}</a>`).join('<span aria-hidden="true">/</span>');
+  return `<header class="site-header"><div class="shell header-inner">
+    <nav class="desktop-nav" aria-label="${u.nav}">${links}</nav>
+    <button class="menu-toggle js-only" id="menu-toggle" type="button" aria-label="${u.menuOpen}" aria-controls="menu-dialog" aria-expanded="false">${icon('menu')}<span>${u.menu}</span></button>
+    <a class="wordmark" href="${home ? '#top' : origin}" aria-label="${esc(p.name)} — ${u.home}">${esc(p.name)}</a>
+    <nav class="languages" aria-label="${u.language}">${languages}</nav></div>
+    <noscript><nav class="noscript-nav shell" aria-label="${u.nav}">${links}</nav></noscript>
   </header>
-  <dialog class="menu-dialog" id="menu-dialog" aria-labelledby="menu-title">
-    <div class="shell menu-inner">
-      <div class="menu-head"><p class="eyebrow" id="menu-title">Navigation</p><button class="icon-button" id="menu-close" type="button" aria-label="Close navigation">${icon("close")}</button></div>
-      <nav class="menu-links" aria-label="Mobile navigation">
-        <a href="${home}#projects"><span class="menu-number">01</span>Projects${icon("external")}</a>
-        <a href="${home}#about"><span class="menu-number">02</span>About${icon("external")}</a>
-        <a href="${home}#contact"><span class="menu-number">03</span>Contact${icon("external")}</a>
-      </nav>
-      <div class="menu-bottom"><p class="availability">${escape(profile.status)}</p><div class="social-links">${socialLinks(profile)}</div><p class="caption">${escape(profile.location)}</p></div>
-    </div>
-  </dialog>`;
+  <dialog class="menu-dialog" id="menu-dialog" aria-label="${u.nav}"><div class="shell menu-inner"><div class="menu-head"><span class="caption">${u.menu}</span>${iconButton('menu-close',u.menuClose,'close')}</div><nav class="menu-links" aria-label="${u.nav}">${links}</nav></div></dialog>`;
 }
 
-function footer(profile, base, isHome) {
-  const home = isHome ? "" : base;
-  return `<footer class="site-footer shell">
-    <div class="footer-main">
-      <div><a class="wordmark footer-wordmark" href="${isHome ? "#top" : base}">${escape(profile.name)}</a><p class="footer-role">${escape(profile.role)}</p></div>
-      <nav class="footer-nav" aria-label="Footer navigation"><a href="${home}#projects">Projects</a><a href="${home}#about">About</a><a href="${home}#contact">Contact</a></nav>
-      <div class="social-links footer-socials">${socialLinks(profile)}</div>
-    </div>
-    <div class="footer-bottom"><p>© <span data-year>${new Date().getFullYear()}</span> ${escape(profile.name)}<span class="footer-separator"> / </span>Built with vanilla HTML, CSS &amp; JS</p><a class="text-action back-to-top" href="#top">Back to top${icon("up")}</a></div>
-  </footer>`;
+function footer({p,u}) {
+  return `<footer class="site-footer shell"><p>© <span data-year>2026</span> ${esc(p.name)} <span aria-hidden="true">/</span> ${esc(u.built)}</p><a class="text-action" href="#top">${u.top}${icon('up')}</a></footer>`;
 }
 
-function gallery(projects, base) {
-  const data = projects.map((project) => ({ id: slugify(project.title), title: project.title, type: project.type, images: (project.screenshots || [project.image]).filter(Boolean).map((image) => asset(image, base)) }));
-  return `<dialog class="gallery-dialog" id="gallery-dialog" aria-labelledby="gallery-title">
-    <div class="gallery-content">
-      <div class="gallery-head"><div><p class="eyebrow" id="gallery-kicker">Project / Screenshots</p><h2 id="gallery-title">Screenshots</h2></div><button class="icon-button" id="gallery-close" type="button" aria-label="Close gallery">${icon("close")}</button></div>
-      <div class="gallery-viewport" id="gallery-viewport"><button class="icon-button gallery-prev" id="gallery-prev" type="button" aria-label="Previous screenshot">${icon("previous")}</button><div class="gallery-image-wrap"><img id="gallery-image" alt="" decoding="async"><p id="gallery-error" hidden>Could not load this screenshot. Please try another image.</p></div><button class="icon-button gallery-next" id="gallery-next" type="button" aria-label="Next screenshot">${icon("next")}</button></div>
-      <div class="gallery-bottom"><p class="caption gallery-counter" id="gallery-counter" aria-live="polite" aria-atomic="true"></p><div class="gallery-thumbs" id="gallery-thumbs" role="group" aria-label="Choose a screenshot"></div><p class="caption gallery-hint">← → to explore <span>/</span> Esc to close</p></div>
-    </div>
-  </dialog>
-  <script type="application/json" id="project-data">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`;
+function sculpture(u) {
+  return `<figure class="sculpture" id="sculpture" data-state="still">
+    <div class="sculpture-frame"><picture><source media="(max-width: 700px)" srcset="/assets/sculpture/infinity-640.webp"><img class="sculpture-poster" src="/assets/sculpture/infinity-1280.webp" width="1280" height="800" fetchpriority="high" alt="${u.artAlt}"></picture></div>
+    <figcaption><div class="sculpture-credit"><span class="caption">${u.artLabel}</span><span>Chrome Infinity</span></div>
+    <div class="art-buttons js-only"><div id="art-tools" hidden>${iconButton('art-left',u.left,'prev')}${iconButton('art-reset',u.reset,'reset')}${iconButton('art-right',u.right,'next')}</div>
+    <button type="button" class="art-toggle" id="art-toggle" aria-pressed="false">${icon('cube')}<span>${u.view3d}</span></button></div></figcaption>
+    <p class="art-message" id="art-status" role="status" aria-live="polite"></p><p class="sr-only" id="art-help">${u.artHelp}</p></figure>`;
 }
 
-function layout({ profile, projects, base = "./", title, description, pathname = "", content, isHome = false }) {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>${escape(title)}</title>
-  <meta name="description" content="${escape(description)}">
-  <meta name="theme-color" content="#000000">
-  <meta name="color-scheme" content="dark">
-  <link rel="canonical" href="${siteUrl}/${pathname}">
-  <link rel="icon" href="${base}assets/favicon.svg" type="image/svg+xml">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="${escape(profile.name)}">
-  <meta property="og:title" content="${escape(title)}">
-  <meta property="og:description" content="${escape(description)}">
-  <meta property="og:url" content="${siteUrl}/${pathname}">
-  <meta property="og:image" content="${siteUrl}/assets/img/social-cover.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${escape(title)}">
-  <meta name="twitter:description" content="${escape(description)}">
-  <meta name="twitter:image" content="${siteUrl}/assets/img/social-cover.png">
-  <link rel="preload" href="${base}assets/fonts/saira-condensed-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="${base}assets/fonts/cormorant-garamond-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="${base}assets/css/styles.css?v=2">
-  <script src="${base}assets/js/main.js?v=2" defer></script>
-</head>
-<body${isHome ? ' data-page="home"' : ' data-page="project"'} id="top">
-  <a class="skip-link" href="#main">Skip to content</a>
-  ${header(profile, base, isHome)}
-  <main id="main" tabindex="-1">${content}</main>
-  ${footer(profile, base, isHome)}
-  ${gallery(projects, base)}
-  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-</body>
-</html>
-`.replace(/[ \t]+$/gm, "");
-}
-
-function tags(project) {
-  return `<ul class="tags" aria-label="Technologies">${project.tags.map((tag) => `<li>${escape(tag)}</li>`).join("")}</ul>`;
-}
-
-function projectActions(project, { base = "./", includeDetails = false } = {}) {
-  const slug = slugify(project.title);
+function actions(project, {u,lang}, onHome) {
+  const label = project.type === 'bot' ? u.launch : u.live;
   return `<div class="project-actions">
-    ${project.demo ? external(project.demo, project.type === "bot" ? "Open bot" : "Live demo", "button button-small", `aria-label="${escape(project.title)} — ${project.type === "bot" ? "open Telegram bot" : "open live website"} (new tab)"`) : ""}
-    ${project.repo ? external(project.repo, "GitHub", "text-action", `aria-label="${escape(project.title)} — source code (new tab)"`) : ""}
-    ${project.screenshots?.length ? `<button class="text-action" type="button" data-gallery="${slug}" aria-haspopup="dialog" aria-label="${escape(project.title)} — screenshots">Screenshots${icon("gallery")}</button>` : ""}
-    ${includeDetails ? `<a class="text-action" href="${base}projects/${slug}/">Explore project${icon("arrow")}</a>` : ""}
-  </div>`;
+    ${project.demo ? ext(project.demo,label,`${project.title} — ${label} (${u.newTab})`) : ''}
+    ${project.repo ? ext(project.repo,'GitHub',`${project.title} — ${u.source} (${u.newTab})`) : ''}
+    ${onHome && project.screenshots?.length ? `<a class="text-action" href="${localizedPath(lang,projectPath(project))}#screens" data-gallery="${project.id}" aria-label="${esc(project.title)} — ${u.shots}">${u.shots}</a>` : ''}</div>`;
 }
 
-function projectCard(project, index) {
-  const slug = slugify(project.title);
-  const isBot = project.type === "bot";
-  const image = previewImage(isBot ? project.screenshots?.[0] || project.avatar : project.image);
-  const media = `<img class="project-image" src="${escape(image)}" alt="${escape(project.title)} — ${isBot ? "Telegram interface" : "website preview"}" width="${isBot ? 785 : 1600}" height="${isBot ? 1026 : 1000}" loading="lazy" decoding="async">${isBot ? `<img class="bot-avatar" src="${escape(previewImage(project.avatar))}" alt="${escape(project.title)} — avatar" width="100" height="100" loading="lazy" decoding="async"><span class="media-action" aria-hidden="true">${icon("gallery")}</span>` : `<span class="media-action" aria-hidden="true">${icon("external")}</span>`}`;
-  return `<article class="project-card${index === 0 ? " project-card-featured" : ""} reveal" id="project-${slug}" data-type="${project.type}" data-project-id="${slug}">
-    ${isBot ? `<button class="project-visual project-visual-bot" type="button" data-gallery="${slug}" aria-haspopup="dialog" aria-label="View screenshots of ${escape(project.title)}">${media}</button>` : `<a class="project-visual" href="./projects/${slug}/" aria-label="Explore ${escape(project.title)}">${media}</a>`}
-    <div class="project-body"><p class="caption project-caption"><span>${number(index + 1)}</span><span>${category(project)}</span></p><h3 class="project-title"><a href="./projects/${slug}/">${escape(project.title)}${icon("external")}</a></h3><p class="project-description"${language(project)}>${escape(project.description)}</p>${tags(project)}${projectActions(project)}</div>
-  </article>`;
+function card(project, index, ctx) {
+  const { lang,u } = ctx, bot = project.type === 'bot', url = localizedPath(lang,projectPath(project));
+  return `<article class="project-card" id="project-${project.id}" data-type="${project.type}">
+    <a class="project-visual${bot ? ' project-visual-bot' : ''}" href="${url}" aria-label="${u.details}: ${esc(project.title)}"><img class="project-image" src="${preview(bot ? project.screenshots[0] : project.image)}" alt="${esc(project.title)} — ${bot ? u.botPreview : u.preview}" loading="lazy" decoding="async"></a>
+    <div class="project-meta caption"><span>${num(index+1)}</span> / ${bot ? u.bot : u.site}</div>
+    <h3 class="project-title"><a href="${url}">${esc(project.title)}${icon('arrow')}</a></h3>
+    <p class="project-description">${esc(project.lead)}</p>${actions(project,ctx,true)}</article>`;
 }
 
-function contact(profile) {
-  return `<section class="contact section" id="contact" aria-labelledby="contact-title"><div class="shell">
-    <div class="section-label reveal"><span class="caption">03 / Contact</span><p class="availability">${escape(profile.status)}</p></div>
-    <div class="contact-grid reveal"><h2 id="contact-title">Have an idea<br>worth building?</h2><div class="contact-copy"><p>I’m always open to product collaborations, frontend challenges, and thoughtful conversations. The fastest way to reach me is email or Telegram.</p><a class="button" href="mailto:${escape(profile.socials.email)}">Say hello${icon("external")}</a></div></div>
-    <div class="contact-bottom reveal"><div class="email-group"><a class="contact-email" href="mailto:${escape(profile.socials.email)}">${escape(profile.socials.email)}</a><button class="icon-button copy-email" id="copy-email" type="button" data-email="${escape(profile.socials.email)}" aria-label="Copy email address">${icon("copy")}</button></div><div class="social-links">${external(profile.socials.telegram, "Telegram")}${external(profile.socials.github, "GitHub")}</div></div>
-  </div></section>`;
+function contact({p,u}) {
+  const email = esc(p.socials.email);
+  return `<section class="contact section shell" id="contact" aria-labelledby="contact-title"><p class="section-label caption">03 / ${u.contact}</p>
+    <div class="contact-grid"><h2 id="contact-title">${u.contactTitle}</h2><p class="contact-copy">${u.contactBody}</p></div>
+    <div class="contact-bottom"><div class="email-group"><a class="contact-email" href="mailto:${email}">${email}</a><button class="icon-button js-only" id="copy-email" type="button" data-email="${email}" aria-label="${u.copy}" title="${u.copy}">${icon('copy')}</button></div>
+    <div class="social-links">${ext(p.socials.telegram,'Telegram')}${ext(p.socials.github,'GitHub')}</div></div></section>`;
 }
 
-export function renderHome(originalProfile, originalProjects) {
-  const profile = { ...originalProfile, avatar: previewImage(originalProfile.avatar) };
-  const projects = originalProjects.map((project) => ({ ...project, ...(project.image ? { image: previewImage(project.image) } : {}), ...(project.avatar ? { avatar: previewImage(project.avatar) } : {}) }));
-  const featured = projects.find((project) => project.title.startsWith("Nika")) || projects[0];
-  const secondary = projects[0];
-  const sites = projects.filter((project) => project.type === "site").length;
-  const bots = projects.length - sites;
-  const content = `
-    <section class="hero shell" aria-labelledby="hero-title">
-      <div class="hero-topline"><p class="caption">The portfolio of ${escape(profile.name)}</p><p class="availability">${escape(profile.status)}</p></div>
-      <div class="hero-grid">
-        <div class="hero-copy"><h1 id="hero-title">Frontend &amp;<br><span>AI App</span><br>Developer</h1><p class="hero-intro">${escape(profile.bio.split(". ")[0])}.</p><div class="hero-actions"><a class="button" href="#projects">View projects${icon("down")}</a><a class="text-action" href="#contact">Get in touch${icon("external")}</a></div></div>
-        <div class="hero-showcase" aria-label="Selected project previews"><div class="showcase-label caption"><span>Selected work</span><span>${number(projects.indexOf(featured) + 1)} / ${number(projects.length)}</span></div><a class="hero-preview hero-preview-main" href="./projects/${slugify(featured.title)}/" aria-label="Explore ${escape(featured.title)}"><img src="${escape(featured.image)}" alt="${escape(featured.title)} — e-commerce website" width="1600" height="1000" fetchpriority="high"><span class="preview-open" aria-hidden="true">${icon("external")}</span></a><a class="hero-preview hero-preview-secondary" href="./projects/${slugify(secondary.title)}/" aria-label="Explore ${escape(secondary.title)}"><img src="${escape(secondary.image)}" alt="${escape(secondary.title)} — interactive web lesson" width="1600" height="1000" decoding="async"><span class="preview-open" aria-hidden="true">${icon("external")}</span></a><p class="showcase-caption caption">Web interfaces. Interactive products.</p></div>
-      </div>
-      <div class="hero-bottom"><p class="caption">${escape(profile.location)}<span class="metadata-slash">/</span><span class="handle">${escape(profile.nickname)}</span></p><div class="social-links">${socialLinks(profile)}</div><a class="scroll-link caption" href="#projects">Scroll to explore${icon("down")}</a></div>
-    </section>
-
-    <section class="projects section shell" id="projects" aria-labelledby="projects-title">
-      <div class="section-label reveal"><span class="caption">01 / Selected work</span><span class="caption">${number(projects.length)} projects</span></div>
-      <div class="section-heading reveal"><h2 id="projects-title">Ideas, brought<br><span>to the browser.</span></h2><p class="section-intro">Web experiences and Telegram bots.<br>Explore the interfaces, try the demos,<br>and take a look at the code.</p></div>
-      <div class="project-toolbar"><div class="project-filters" role="group" aria-label="Filter projects"><button class="filter-button is-active" type="button" data-filter="all" aria-pressed="true">All<span>${number(projects.length)}</span></button><button class="filter-button" type="button" data-filter="site" aria-pressed="false">Websites<span>${number(sites)}</span></button><button class="filter-button" type="button" data-filter="bot" aria-pressed="false">Bots<span>${number(bots)}</span></button></div>${external(profile.socials.github, "View GitHub", "text-action toolbar-github")}</div>
-      <p class="sr-only" id="filter-status" role="status" aria-live="polite" aria-atomic="true">Showing all ${projects.length} projects</p>
-      <div class="projects-grid" id="projects-grid">${projects.map(projectCard).join("\n")}</div>
-    </section>
-
-    <section class="about section" id="about" aria-labelledby="about-title"><div class="shell">
-      <div class="section-label reveal"><span class="caption">02 / About</span><span class="caption">${escape(profile.role)}</span></div>
-      <div class="about-grid"><div class="about-identity reveal"><div class="about-image"><img src="${escape(profile.avatar)}" alt="${escape(profile.name)} — original profile artwork" width="2000" height="1094" loading="lazy" decoding="async"></div><div class="identity-caption"><p>${escape(profile.name)}</p><span class="caption">${escape(profile.nickname)}</span></div><p class="caption about-location">${escape(profile.location)}</p></div><div class="about-copy reveal"><h2 id="about-title">Complex ideas.<br><span>Made simple.</span></h2><p class="about-bio">${escape(profile.bio)}</p><div class="expertise"><div><h3>Web interfaces</h3><p>HTML5/CSS3 · Vanilla JS · React · TypeScript · Vite · UI/UX</p></div><div><h3>Interactive products</h3><p>Web Speech API · CSS Variables · LocalStorage · E-commerce</p></div><div><h3>Telegram automation</h3><p>Python · python-telegram-bot · Flask · SQLite · Render · Telegram API · Booking System</p></div></div></div></div>
-      <div class="project-facts reveal"><div><span class="fact-value">${number(projects.length)}</span><span class="caption">Selected projects</span></div><div><span class="fact-value">${number(sites)}</span><span class="caption">Websites</span></div><div><span class="fact-value">${number(bots)}</span><span class="caption">Telegram bots</span></div><div><span class="fact-value fact-location">Remote</span><span class="caption">Europe</span></div></div>
-    </div></section>
-    ${contact(profile)}`;
-
-  return layout({ profile, projects, title: `${profile.name} — ${profile.role}`, description: profile.bio, content, isHome: true });
+function homeContent(ctx) {
+  const {p,u,projects,lang} = ctx;
+  const counts = [projects.length, ...['site','bot'].map(kind => projects.filter(x => x.type===kind).length)];
+  const filters = ['all','site','bot'].map((id,i) => `<button type="button" class="filter-button" data-filter="${id}" aria-pressed="${i===0}">${[u.all,u.sites,u.bots][i]}<span>${num(counts[i])}</span></button>`).join('');
+  const siteTags = [...new Set(projects.filter(x=>x.type==='site').flatMap(x=>x.tags))];
+  const interactive = new Set(['Web Speech API','CSS Variables','LocalStorage','E-commerce','Електронна комерція']);
+  const groups = [siteTags.filter(x=>!interactive.has(x)),siteTags.filter(x=>interactive.has(x)),[...new Set(projects.filter(x=>x.type==='bot').flatMap(x=>x.tags))]];
+  return `<section class="hero shell" aria-labelledby="hero-title"><div class="hero-copy"><p class="caption hero-kicker">${u.portfolio}</p>
+    <h1 id="hero-title">${esc(u.hero[0])} <span>${esc(u.hero[1])}</span></h1><p class="hero-intro">${esc(p.intro)}</p>
+    <a class="button" href="#projects">${u.workCTA}${icon('down')}</a></div>${sculpture(u)}
+    <div class="hero-foot caption"><span class="availability">${esc(p.status)}</span><span>${esc(p.location)}</span></div></section>
+    <section class="projects section shell" id="projects" aria-labelledby="projects-title"><p class="section-label caption">01 / ${u.selected}</p>
+    <div class="project-toolbar"><h2 id="projects-title">${u.projects}</h2><div class="project-filters js-only" role="group" aria-label="${u.filters}">${filters}</div></div>
+    <p class="sr-only" id="filter-status" role="status" aria-live="polite"></p><div class="projects-grid">${projects.map((x,i)=>card(x,i,ctx)).join('\n')}</div></section>
+    <section class="about section" id="about" aria-labelledby="about-title"><div class="shell about-grid"><div class="about-identity"><img src="${preview(p.avatar)}" alt="${esc(p.name)} — ${u.artwork}" width="1600" height="875" loading="lazy"><span class="caption handle">${esc(p.nickname)}</span></div>
+    <div class="about-copy"><p class="section-label caption">02 / ${u.about}</p><h2 id="about-title">${esc(p.name)}</h2><p class="caption about-role">${esc(p.role)}</p><p class="about-bio">${esc(p.bio)}</p>
+    <dl class="expertise">${groups.map((group,i)=>`<div><dt>${u.expertise[i]}</dt><dd>${group.map(esc).join(' · ')}</dd></div>`).join('')}</dl></div></div></section>${contact(ctx)}`;
 }
 
-export function renderProject(profile, projects, index) {
-  const project = projects[index];
-  const base = "../../";
-  const slug = slugify(project.title);
-  const images = (project.screenshots || [project.image]).filter(Boolean);
-  const nextIndex = (index + 1) % projects.length;
-  const next = projects[nextIndex];
-  const content = `
-    <section class="project-detail shell" aria-labelledby="detail-title">
-      <a class="text-action breadcrumb" href="../../#projects">${icon("previous")}All projects</a>
-      <div class="section-label"><span class="caption">${number(index + 1)} / ${category(project)}</span><span class="caption">Selected work</span></div>
-      <div class="detail-heading"><h1 id="detail-title">${escape(project.title)}</h1><div class="detail-summary"><p${language(project)}>${escape(project.description)}</p>${projectActions(project, { base })}</div></div>
-      <div class="detail-specs"><div><span class="caption">Project type</span><p>${category(project)}</p></div><div><span class="caption">Technologies</span>${tags(project)}</div>${project.avatar ? `<div class="detail-bot-identity"><img src="${asset(project.avatar, base)}" alt="${escape(project.title)} — avatar" width="80" height="80"><span class="caption">Telegram bot</span></div>` : ""}</div>
-      <div class="detail-gallery${project.type === "bot" ? " detail-gallery-bot" : ""}">${images.map((image, imageIndex) => `<figure class="detail-figure reveal"><button type="button" class="detail-image-button" data-gallery="${slug}" data-gallery-index="${imageIndex}" aria-haspopup="dialog" aria-label="Enlarge ${escape(project.title)} — screenshot ${imageIndex + 1}"><img src="${asset(image, base)}" alt="${escape(project.title)} — screenshot ${imageIndex + 1}" loading="${imageIndex ? "lazy" : "eager"}" decoding="async"><span class="media-action" aria-hidden="true">${icon("gallery")}</span></button><figcaption class="caption">${escape(project.title)}<span>${number(imageIndex + 1)} / ${number(images.length)}</span></figcaption></figure>`).join("")}</div>
-      <div class="detail-bottom"><a class="button" href="../../#projects">${icon("previous")}Back to projects</a><a class="next-project" href="../${slugify(next.title)}/"><span class="caption">Next project / ${number(nextIndex + 1)}</span><span>${escape(next.title)}${icon("arrow")}</span></a></div>
-    </section>
-    ${contact(profile)}`;
-  return layout({ profile, projects, base, title: `${project.title} — ${profile.name}`, description: project.description, pathname: `projects/${slug}/`, content });
+function detailContent(project, index, ctx) {
+  const {u, projects, lang} = ctx, back = `${localizedPath(lang)}#projects`, images = shots(project);
+  const next = projects[(index+1)%projects.length];
+  return `<article class="project-detail section shell"><a class="text-action breadcrumb" href="${back}">${icon('prev')}${u.back}</a>
+    <p class="section-label caption">${num(index+1)} / ${project.type==='bot'?u.bot:u.site}</p>
+    <div class="detail-heading"><h1>${esc(project.title)}</h1><div class="detail-summary"><p>${esc(project.description)}</p>${actions(project,ctx,false)}</div></div>
+    <div class="detail-specs">${project.avatar ? `<img src="${preview(project.avatar)}" width="54" height="54" alt="${u.avatar}: ${esc(project.title)}">` : ''}<span class="caption">${u.stack}</span>${tagList(project,u)}</div>
+    <div id="screens" class="detail-gallery${project.type==='bot'?' detail-gallery-bot':''}">${images.map((src,i)=>`<figure><a class="detail-image-button" href="${esc(src)}" data-gallery="${project.id}" data-gallery-index="${i}" aria-label="${u.enlarge}: ${esc(project.title)}, ${i+1}"><img src="${preview(src)}" alt="${esc(project.title)} — ${u.shot} ${i+1}" loading="${i?'lazy':'eager'}" decoding="async"></a><figcaption class="caption">${u.shot} ${num(i+1)} / ${num(images.length)}</figcaption></figure>`).join('')}</div>
+    <div class="detail-bottom"><a class="text-action" href="${back}">${icon('prev')}${u.back}</a><a class="next-project" href="${localizedPath(lang,projectPath(next))}"><span class="caption">${u.nextProject}</span><span>${esc(next.title)}${icon('arrow')}</span></a></div></article>${contact(ctx)}`;
+}
+
+function gallery(u) {
+  return `<dialog class="gallery-dialog" id="gallery-dialog" aria-labelledby="gallery-title"><div class="gallery-content">
+    <div class="gallery-head"><div><p class="caption" id="gallery-kicker">${u.shots}</p><h2 id="gallery-title">${u.shots}</h2></div>${iconButton('gallery-close',u.closeGallery,'close')}</div>
+    <div class="gallery-viewport" id="gallery-viewport">${iconButton('gallery-prev',u.prev,'prev')}<div class="gallery-image-wrap"><img id="gallery-image" alt=""><p id="gallery-error" hidden>${u.shotError}</p></div>${iconButton('gallery-next',u.next,'next')}</div>
+    <div class="gallery-bottom"><span class="caption" id="gallery-counter" aria-live="polite"></span><div id="gallery-thumbs" class="gallery-thumbs" role="group" aria-label="${u.thumbs}"></div></div></div></dialog>`;
+}
+
+export function render(rawProfile, rawProjects, {lang,route,entry=false}) {
+  const {profile:p, projects} = content(rawProfile,rawProjects,lang), u=ui[lang];
+  const home = route==='', missing = route==='404', ctx={p,projects,u,lang,route,home};
+  const index = projects.findIndex(x=>projectPath(x)===route), project=projects[index];
+  const title = home ? `${p.name} — ${p.role}` : `${missing?u.missing:project.title} — ${p.name}`;
+  const description = missing ? u.missingBody : home?p.bio:project.description;
+  const canonical = siteUrl+localizedPath(lang,route);
+  const body = home ? homeContent(ctx) : missing ? `<section class="not-found shell"><p class="caption">404</p><h1>${u.missing}</h1><p>${u.missingBody}</p><a class="button" href="${localizedPath(lang)}#projects">${u.back}${icon('arrow')}</a></section>` : detailContent(project,index,ctx);
+  const messages = {...u.runtime,shot:u.shot,shots:u.shots,bot:u.bot,site:u.site,view3d:u.view3d,still:u.still,artAlt:u.artAlt};
+  const galleryData = (missing?[]:home?projects:[project]).map(x=>({id:x.id,title:x.title,type:x.type,images:shots(x)}));
+  // Only language-neutral legacy URLs consult a saved preference. Explicit shared
+  // /uk/ and /en/ URLs always win. Resolve before paint and preserve deep links.
+  const preference = entry ? `<script>try{const l=localStorage.getItem('fluentfable.locale');if(${json(locales)}.includes(l)&&l!==${json(defaultLocale)}&&!/^\\/(uk|en)(?:\\/|$)/.test(location.pathname))location.replace('/'+l+location.pathname+location.search+location.hash)}catch{}</script>` : '';
+  const seo = missing ? '<meta name="robots" content="noindex">' : `<link rel="canonical" href="${canonical}">
+    ${locales.map(l=>`<link rel="alternate" hreflang="${l}" href="${siteUrl+localizedPath(l,route)}">`).join('\n')}
+    <link rel="alternate" hreflang="x-default" href="${siteUrl}/${route}">
+    <meta property="og:type" content="website"><meta property="og:site_name" content="${esc(p.name)}"><meta property="og:url" content="${canonical}">
+    <meta property="og:locale" content="${lang==='uk'?'uk_UA':'en_US'}"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(description)}">
+    <meta property="og:image" content="${siteUrl}/assets/img/social-${lang}.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${esc(title)}"><meta name="twitter:description" content="${esc(description)}"><meta name="twitter:image" content="${siteUrl}/assets/img/social-${lang}.png">`;
+  return `<!doctype html>
+<html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+${preference}<title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="theme-color" content="#000000"><meta name="color-scheme" content="dark">
+${seo}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/css/styles.css?v=3"><script src="/assets/js/main.js?v=3" defer></script></head>
+<body id="top" data-page="${home?'home':missing?'missing':'project'}"><a class="skip-link" href="#main">${u.skip}</a>${header(ctx)}
+<main id="main" tabindex="-1">${body}</main>${footer(ctx)}${missing?'':gallery(u)}
+<script type="application/json" id="page-data">${json({messages,projects:galleryData})}</script><div class="toast" id="toast" role="status" hidden></div></body></html>\n`.replace(/[ \t]+$/gm,'');
 }

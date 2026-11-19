@@ -1,87 +1,76 @@
-import { readFile, stat, readdir } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
-import assert from "node:assert/strict";
-import { slugify } from "../src/render.mjs";
+import {readFile, stat} from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {defaultLocale,locales,projectPath,localizedPath,siteUrl} from '../src/site.mjs';
+import {content,ui} from '../src/copy.mjs';
+import {render} from '../src/render.mjs';
 
-const root = fileURLToPath(new URL("../", import.meta.url));
-const output = path.join(root, "dist");
-const profile = JSON.parse((await readFile(path.join(root, "data/profile.json"), "utf8")).replace(/^\uFEFF/, ""));
-const projects = JSON.parse((await readFile(path.join(root, "data/projects.json"), "utf8")).replace(/^\uFEFF/, ""));
-const decode = (value) => value.replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-const pages = ["index.html", ...projects.map((project) => `projects/${slugify(project.title)}/index.html`), "404.html"];
-const htmlByPath = new Map(await Promise.all(pages.map(async (page) => [page, await readFile(path.join(output, page), "utf8")])));
-let localLinks = 0;
-let images = 0;
-
-for (const [page, html] of htmlByPath) {
-  assert.equal((html.match(/<h1[\s>]/g) || []).length, 1, `${page}: one primary heading`);
-  assert.ok(/<html lang="en">/.test(html), `${page}: document language`);
-  assert.ok(/name="viewport"/.test(html), `${page}: mobile viewport`);
-  assert.ok(!/Alex Morgan|yourhandle|hello@example\.com|{{|}}/.test(html), `${page}: no template content`);
-  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
-  assert.equal(new Set(ids).size, ids.length, `${page}: unique element IDs`);
-  if (page !== "404.html") {
-    assert.ok(html.includes('id="menu-dialog"') && html.includes('id="gallery-dialog"'), `${page}: both accessible dialogs`);
-    assert.ok(html.includes('rel="canonical"'), `${page}: canonical URL`);
-    assert.equal(await readFile(path.join(root, page), "utf8"), html, `${page}: root deployment is up to date`);
-  }
-
-  for (const [tag] of html.matchAll(/<img\b[^>]*>/g)) {
-    assert.ok(/\balt="[^"]*"/.test(tag), `${page}: all images have alternatives`);
-    images += 1;
-  }
-
-  for (const match of html.matchAll(/\b(?:href|src)="([^"]+)"/g)) {
-    const value = decode(match[1]);
-    if (value.startsWith("mailto:")) {
-      assert.ok(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.slice(7)), `${page}: valid email`);
-      continue;
+const root=fileURLToPath(new URL('../',import.meta.url)), dist=path.join(root,'dist');
+const read=(name,from=dist)=>readFile(path.join(from,name),'utf8');
+const data=async name=>JSON.parse((await read(`data/${name}.json`)).replace(/^\uFEFF/,''));
+const projects=await data('projects'), profile=await data('profile');
+const routes=['',...projects.map(projectPath),'404'];
+const exists=async name=>assert.ok((await stat(path.join(dist,name)).catch(()=>null))?.isFile(),`Missing: ${name}`);
+const unescape=s=>s.replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&');
+const pages=new Map(); let links=0;
+for(const prefix of ['',...locales]) for(const route of routes) {
+  const key=path.posix.join(prefix,route==='404'?'404.html':`${route}index.html`);
+  const html=await read(key), lang=prefix || defaultLocale, {profile:p,projects:work}=content(profile,projects,lang);
+  assert.equal(html,render(profile,projects,{lang,route,entry:!prefix}),`${key} stale build`);
+  assert.equal(html,await read(key,root),`${key} stale deployable root`);
+  assert.ok(html.includes(`<html lang="${lang}">`));
+  assert.equal((html.match(/<h1[\s>]/g)||[]).length,1);
+  const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(new Set(ids).size,ids.length,key);
+  for(const l of locales) assert.ok(html.includes(`data-language="${l}" href="${localizedPath(l,route)}"`));
+  for(const img of html.matchAll(/<img\b[^>]*>/g)) assert.match(img[0],/\balt="[^"]*"/);
+  for(const url of Object.values(profile.socials)) if(route!=='404') assert.ok(html.includes(url),`${key}: ${url}`);
+  if(route==='404') assert.ok(html.includes(ui[lang].missing));
+  else {
+    for(const l of locales) assert.ok(html.includes(`hreflang="${l}" href="${siteUrl+localizedPath(l,route)}"`));
+    assert.ok(html.includes(`rel="canonical" href="${siteUrl+localizedPath(lang,route)}"`));
+    const visible=unescape(html);
+    if(!route){
+      for(const v of [p.name,p.nickname,p.bio,p.status,p.location,p.role]) assert.ok(visible.includes(v),`${key}: ${v}`);
+      assert.equal((html.match(/class="project-card"/g)||[]).length,projects.length);
+      assert.ok(html.includes('id="sculpture"')); assert.ok(!/<(?:link|script|img)[^>]+(?:sculpture\.js|infinity(?:-lite)?\.glb)/.test(html),'3D must be opt-in');
     }
-    const url = new URL(value, `https://local.test/${page}`);
-    assert.ok(["http:", "https:"].includes(url.protocol), `${page}: allowed URL protocol`);
-    if (url.host !== "local.test") continue;
-    let target = decodeURIComponent(url.pathname).replace(/^\//, "");
-    if (!target || target.endsWith("/")) target += "index.html";
-    const resolved = path.resolve(output, target);
-    assert.ok(resolved.startsWith(`${output}${path.sep}`), `${page}: link stays in the output directory`);
-    assert.ok((await stat(resolved).catch(() => null))?.isFile(), `${page}: ${value} exists`);
-    assert.ok((await readdir(path.dirname(resolved))).includes(path.basename(resolved)), `${page}: filename case matches ${value}`);
-    if (url.hash) {
-      const targetHtml = htmlByPath.get(target) || await readFile(resolved, "utf8");
-      assert.ok(targetHtml.includes(`id="${url.hash.slice(1)}"`), `${page}: ${value} has a valid anchor`);
+    for(const project of work.filter(p=>!route || projectPath(p)===route)){
+      for(const v of [project.title,project.demo,project.repo,...(route?[project.description,...project.tags]:[project.lead])].filter(Boolean))assert.ok(visible.includes(v),`${key}: ${v}`);
+      for(const src of project.screenshots || [project.image]) {assert.ok(html.includes(src.slice(1)),src);await exists(src.slice(2));}
     }
-    localLinks += 1;
   }
+  pages.set(key,{html,ids:new Set(ids)});
 }
-
-const home = decode(htmlByPath.get("index.html"));
-assert.equal((home.match(/class="project-card[\s"]/g) || []).length, projects.length, "All original projects appear on the home page");
-for (const project of projects) {
-  const detail = decode(htmlByPath.get(`projects/${slugify(project.title)}/index.html`));
-  for (const content of [project.title, project.description, ...project.tags]) {
-    assert.ok(home.includes(content), `Homepage retains: ${content}`);
-    assert.ok(detail.includes(content), `Project page retains: ${content}`);
-  }
-  for (const url of [project.demo, project.repo].filter(Boolean)) {
-    assert.ok(home.includes(`href="${url}"`), `Homepage retains ${url}`);
-    assert.ok(detail.includes(`href="${url}"`), `Detail retains ${url}`);
-  }
-  for (const image of project.screenshots || []) {
-    assert.ok(home.includes(image) && detail.includes(image.replace(/^\.\//, "../../")), `Gallery retains the original screenshot ${image}`);
-  }
+for(const [key,{html}] of pages) for(const match of html.matchAll(/\b(href|src|srcset)="([^"]+)"/g)) {
+  const href=unescape(match[2]), u=new URL(href,`https://local.test/${key}`);
+  assert.ok(!href.startsWith('//'),`${key}: ambiguous asset ${href}`);
+  if(u.protocol==='mailto:'){assert.equal(href,`mailto:${profile.socials.email}`);continue;}
+  assert.ok(['https:','http:'].includes(u.protocol),href);
+  if(u.host!=='local.test')continue;
+  let name=decodeURIComponent(u.pathname.slice(1));
+  if(!name || name.endsWith('/'))name+='index.html';
+  if(name.endsWith('/404'))name+='.html';
+  await exists(name); if(u.hash)assert.ok(pages.get(name)?.ids.has(u.hash.slice(1)),`${key}: ${href}`);
+  links++;
 }
-for (const value of [profile.name, profile.nickname, profile.role, profile.bio, profile.status, profile.location, ...Object.values(profile.socials)]) {
-  assert.ok(home.includes(value), `Homepage retains profile data: ${value}`);
+for(const lang of locales) await exists(`assets/img/social-${lang}.png`);
+for(const m of (await read('assets/css/styles.css')).matchAll(/url\("([^"]+)"\)/g)) await exists(path.posix.join('assets/css',m[1]));
+const triangles=[];
+for(const [file,budget] of [['infinity.glb',175000],['infinity-lite.glb',90000]]) {
+  const b=await readFile(path.join(dist,'assets/sculpture',file));
+  assert.ok(b.length<budget); assert.equal(b.toString('ascii',0,4),'glTF');assert.equal(b.readUInt32LE(8),b.length);
+  const j=JSON.parse(b.toString('utf8',20,20+b.readUInt32LE(12)));assert.equal(j.meshes.length,2);assert.equal(j.materials.length,5);
+  triangles.push(j.meshes.flatMap(m=>m.primitives).reduce((n,p)=>n+j.accessors[p.indices].count/3,0));
 }
-
-for (const match of (await readFile(path.join(root, "assets/css/styles.css"), "utf8")).matchAll(/url\("([^"]+)"\)/g)) {
-  assert.ok((await stat(path.resolve(output, "assets/css", match[1]))).isFile(), `Local font ${match[1]} exists`);
+assert.ok(triangles[1]<triangles[0]*.55);
+for(const name of ['atelier.png','infinity-640.webp','infinity-1280.webp']) await exists(`assets/sculpture/${name}`);
+for(const f of ['src/render.mjs','src/copy.mjs','src/site.mjs','assets/js/main.js','assets/js/sculpture.js','scripts/build.mjs','scripts/serve.mjs']){
+  const r=spawnSync(process.execPath,['--check',path.join(root,f)],{encoding:'utf8'}); assert.equal(r.status,0,r.stderr);
 }
-assert.ok((await stat(path.join(output, "assets/img/social-cover.png"))).isFile(), "Social preview exists");
-for (const file of ["assets/js/main.js", "src/render.mjs", "scripts/build.mjs", "scripts/serve.mjs"]) {
-  const result = spawnSync(process.execPath, ["--check", path.join(root, file)], { encoding: "utf8" });
-  assert.equal(result.status, 0, `${file}: ${result.stderr}`);
+if(process.env.GITHUB_ACTIONS){
+  const r=spawnSync('git',['status','--porcelain','--','index.html','projects','uk','en','404.html','sitemap.xml'],{cwd:root,encoding:'utf8'});
+  assert.equal(r.status,0,r.stderr);assert.equal(r.stdout.trim(),'','Checked-in HTML must match the build');
 }
-console.log(`Verified ${pages.length} pages, ${localLinks} local destinations, ${images} image alternatives, all original content and JavaScript syntax.`);
+console.log(`${pages.size} pages, ${links} local destinations, both translations, original data and 3D budgets verified (${triangles.join(' / ')} triangles).`);
