@@ -25,6 +25,7 @@ const go=async(p,route='/')=>{
 const lang=p=>p.locator('html').getAttribute('lang');
 const overflow=async p=>assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`Overflow at ${p.url()}, ${p.viewportSize().width}`);
 const audit=async p=>{
+  await p.evaluate(()=>document.querySelectorAll('[data-reveal]').forEach(el=>{el.classList.remove('will-reveal','is-visible');el.style.opacity='1';el.style.transform='none';}));
   await p.addScriptTag({content:axe.source});
   const violations=await p.evaluate(async()=> (await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21aa','wcag22aa']}})).violations.map(v=>[v.id,...v.nodes.map(n=>n.target)]));
   assert.deepEqual(violations,[],p.url());
@@ -61,12 +62,18 @@ try {
   await test('Default language is independent of the browser locale; 3D replaces the poster and has no controls',async()=>{
     await go(page);assert.equal(await lang(page),defaultLocale);
     assert.equal(await page.locator('.project-card').count(),data.length);
+    assert.equal(await page.locator('.profile h1').textContent(),'FluentFable');
+    assert.ok(await page.locator('.profile-avatar').isVisible());
+    assert.ok(await page.locator('.profile-links a[href*="t.me/"]').isVisible());
+    assert.equal(await page.locator('.will-reveal').count()>0,true);
     await page.waitForSelector('#sculpture[data-state="live"]',{timeout:15000});
     assert.ok(traffic.some(s=>s.endsWith('/infinity.glb')));
     assert.equal(await page.locator('#sculpture canvas').count(),1);
     assert.equal(await page.locator('.sculpture-poster').isVisible(),false);
     assert.equal(await page.locator('#art-toggle, #art-left, #art-right, #art-reset').count(),0);
-    assert.ok(await page.locator('#sculpture canvas').evaluate(el=>el.tabIndex===0));await audit(page);
+    assert.ok(await page.locator('#sculpture canvas').evaluate(el=>el.tabIndex===0));
+    await page.locator('#about').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelector('.will-reveal.is-visible'));
+    await audit(page);
   });
   await test('Language switch, selection on return and explicit deep links preserve route, search and section',async()=>{
     const route=projectPath(data[0]), other=locales.find(l=>l!==defaultLocale);

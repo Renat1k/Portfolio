@@ -47,7 +47,8 @@ export const ui = {
   uk: {
     projects: 'Проєкти', about: 'Про мене', contact: 'Контакти', home: 'На головну', top: 'Нагору', skip: 'До вмісту',
     nav: 'Основна навігація', menu: 'Меню', menuOpen: 'Відкрити меню', menuClose: 'Закрити меню', language: 'Мова сайту',
-    portfolio: 'Портфоліо розробника', hero: ['Фронтенд і', 'ШІ-застосунки'], workCTA: 'До проєктів', selected: 'Вибрані роботи',
+    portfolio: 'Портфоліо розробника', hero: ['Фронтенд і', 'ШІ-застосунки'], workCTA: 'До проєктів', startProject: 'Обговорити проєкт', selected: 'Вибрані роботи',
+    statement: ['Складні ідеї.', 'Зрозумілі рішення.'], aboutHeading: 'Як я працюю',
     all: 'Усі', sites: 'Сайти', bots: 'Боти', site: 'Вебсайт', bot: 'Telegram-бот', filters: 'Фільтр проєктів',
     live: 'Відкрити сайт', launch: 'Відкрити бота', source: 'Вихідний код', newTab: 'у новій вкладці', details: 'Про проєкт', stack: 'Технології', type: 'Тип проєкту',
     preview: 'Попередній огляд сайту', botPreview: 'Інтерфейс Telegram-бота', avatar: 'Аватар', artwork: 'Ілюстрація профілю',
@@ -64,7 +65,8 @@ export const ui = {
   en: {
     projects: 'Projects', about: 'About', contact: 'Contact', home: 'Home', top: 'Back to top', skip: 'Skip to content',
     nav: 'Primary navigation', menu: 'Menu', menuOpen: 'Open menu', menuClose: 'Close menu', language: 'Site language',
-    portfolio: 'Developer portfolio', hero: ['Frontend &', 'AI apps'], workCTA: 'View projects', selected: 'Selected work',
+    portfolio: 'Developer portfolio', hero: ['Frontend &', 'AI apps'], workCTA: 'View projects', startProject: 'Start a project', selected: 'Selected work',
+    statement: ['Complex ideas.', 'Made simple.'], aboutHeading: 'How I work',
     all: 'All', sites: 'Websites', bots: 'Bots', site: 'Website', bot: 'Telegram bot', filters: 'Filter projects',
     live: 'Live demo', launch: 'Open bot', source: 'Source code', newTab: 'new tab', details: 'Project details', stack: 'Technologies', type: 'Project type',
     preview: 'Website preview', botPreview: 'Telegram bot interface', avatar: 'Avatar', artwork: 'Profile artwork',

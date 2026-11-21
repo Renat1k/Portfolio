@@ -6,8 +6,32 @@
   const {messages:t,projects} = JSON.parse($('#page-data').textContent);
   const num = n => String(n).padStart(2,'0');
   const plainClick = e => !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && e.button === 0;
+  const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   document.documentElement.classList.add('enhanced');
   $$('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
+
+  const progress=$('#scroll-progress');
+  let scrollScheduled=false;
+  function updateScroll() {
+    const range=document.documentElement.scrollHeight-innerHeight;
+    if(progress) progress.style.transform=`scaleX(${range>0?Math.min(1,Math.max(0,scrollY/range)):0})`;
+    scrollScheduled=false;
+  }
+  updateScroll();
+  addEventListener('scroll',()=>{ if(!scrollScheduled){ requestAnimationFrame(updateScroll); scrollScheduled=true; } },{passive:true});
+  addEventListener('resize',updateScroll,{passive:true});
+
+  if(!reducedMotion.matches && 'IntersectionObserver' in window){
+    // Only elements that start below the fold are hidden, so the first paint stays instant.
+    const reveal=$$('[data-reveal]').filter(el=>el.getBoundingClientRect().top>innerHeight*.9);
+    reveal.forEach(el=>el.classList.add('will-reveal'));
+    const revealObserver=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){ entry.target.classList.add('is-visible'); revealObserver.unobserve(entry.target); }
+      });
+    },{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+    reveal.forEach(el=>revealObserver.observe(el));
+  }
 
   function updateLanguageLinks() {
     for (const link of $$('[data-language]')) {

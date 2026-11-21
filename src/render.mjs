@@ -11,7 +11,7 @@ const glyphs = { arrow:'M4 12h15m-6-6 6 6-6 6', external:'M6 18 18 6M7 6h11v11',
   prev:'m14 5-7 7 7 7', next:'m10 5 7 7-7 7', close:'m6 6 12 12M18 6 6 18', menu:'M3 8h18M3 16h18',
   copy:'M8 6H4v15h11v-4M8 3h11v14H8z' };
 const icon = name => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${glyphs[name]}"/></svg>`;
-const ext = (url, label, aria) => `<a class="text-action" href="${esc(url)}" target="_blank" rel="noopener noreferrer"${aria ? ` aria-label="${esc(aria)}"` : ''}>${esc(label)}${icon('external')}</a>`;
+const ext = (url, label, aria, className='text-action') => `<a class="${className}" href="${esc(url)}"${url.startsWith('mailto:') ? '' : ' target="_blank" rel="noopener noreferrer"'}${aria ? ` aria-label="${esc(aria)}"` : ''}>${esc(label)}${icon('external')}</a>`;
 const tagList = (p, u) => `<ul class="tags" aria-label="${u.stack}">${p.tags.map(tag => `<li>${esc(tag)}</li>`).join('')}</ul>`;
 const iconButton = (id, label, glyph) => `<button type="button" id="${id}" class="icon-button" aria-label="${label}" title="${label}">${icon(glyph)}</button>`;
 
@@ -23,7 +23,7 @@ function header({ p, u, lang, route, home }) {
     <nav class="desktop-nav" aria-label="${u.nav}">${links}</nav>
     <button class="menu-toggle js-only" id="menu-toggle" type="button" aria-label="${u.menuOpen}" aria-controls="menu-dialog" aria-expanded="false">${icon('menu')}<span>${u.menu}</span></button>
     <a class="wordmark" href="${home ? '#top' : origin}" aria-label="${esc(p.name)} — ${u.home}">${esc(p.name)}</a>
-    <nav class="languages" aria-label="${u.language}">${languages}</nav></div>
+    <nav class="languages" aria-label="${u.language}">${languages}</nav></div><span class="scroll-progress" id="scroll-progress" aria-hidden="true"></span>
     <noscript><nav class="noscript-nav shell" aria-label="${u.nav}">${links}</nav></noscript>
   </header>
   <dialog class="menu-dialog" id="menu-dialog" aria-label="${u.nav}"><div class="shell menu-inner"><div class="menu-head"><span class="caption">${u.menu}</span>${iconButton('menu-close',u.menuClose,'close')}</div><nav class="menu-links" aria-label="${u.nav}">${links}</nav></div></dialog>`;
@@ -55,15 +55,25 @@ function card(project, index, ctx) {
     <a class="project-visual${bot ? ' project-visual-bot' : ''}" href="${url}" aria-label="${u.details}: ${esc(project.title)}"><img class="project-image" src="${preview(bot ? project.screenshots[0] : project.image)}" alt="${esc(project.title)} — ${bot ? u.botPreview : u.preview}" loading="lazy" decoding="async"></a>
     <div class="project-meta caption"><span>${num(index+1)}</span> / ${bot ? u.bot : u.site}</div>
     <h3 class="project-title"><a href="${url}">${esc(project.title)}${icon('arrow')}</a></h3>
-    <p class="project-description">${esc(project.lead)}</p>${actions(project,ctx,true)}</article>`;
+    <p class="project-description">${esc(project.lead)}</p>${actions(project,ctx,true)}</article>`.replace('<article class="project-card"',`<article class="project-card" data-reveal style="--i:${index}"`);
 }
 
 function contact({p,u}) {
   const email = esc(p.socials.email);
-  return `<section class="contact section shell" id="contact" aria-labelledby="contact-title"><p class="section-label caption">03 / ${u.contact}</p>
-    <div class="contact-grid"><h2 id="contact-title">${u.contactTitle}</h2><p class="contact-copy">${u.contactBody}</p></div>
-    <div class="contact-bottom"><div class="email-group"><a class="contact-email" href="mailto:${email}">${email}</a><button class="icon-button js-only" id="copy-email" type="button" data-email="${email}" aria-label="${u.copy}" title="${u.copy}">${icon('copy')}</button></div>
+  return `<section class="contact section shell" id="contact" aria-labelledby="contact-title"><p class="section-label caption" data-reveal>03 / ${u.contact}</p>
+    <div class="contact-grid" data-reveal><h2 id="contact-title">${u.contactTitle}</h2><p class="contact-copy">${u.contactBody}</p></div>
+    <div class="contact-bottom" data-reveal><div class="email-group"><a class="contact-email" href="mailto:${email}">${email}</a><button class="icon-button js-only" id="copy-email" type="button" data-email="${email}" aria-label="${u.copy}" title="${u.copy}">${icon('copy')}</button></div>
     <div class="social-links">${ext(p.socials.telegram,'Telegram')}${ext(p.socials.github,'GitHub')}</div></div></section>`;
+}
+
+function profileMasthead({p,u}) {
+  return `<div class="profile"><img class="profile-avatar" src="${preview(p.avatar)}" alt="${esc(p.name)} — ${u.avatar}" width="176" height="176" fetchpriority="high">
+    <div class="profile-copy"><p class="caption profile-handle">${esc(p.nickname)}</p><h1>${esc(p.name)}</h1><p class="profile-role">${esc(p.role)}</p></div>
+    <div class="profile-contact"><span class="availability">${esc(p.status)}</span><div class="profile-links">
+      ${ext(p.socials.telegram,'Telegram',`${esc(p.name)} — Telegram`,'button button-small')}
+      ${ext(`mailto:${p.socials.email}`,'Email',`${esc(p.name)} — Email`)}
+      ${ext(p.socials.github,'GitHub',`${esc(p.name)} — GitHub`)}
+    </div></div></div>`;
 }
 
 function homeContent(ctx) {
@@ -73,15 +83,15 @@ function homeContent(ctx) {
   const siteTags = [...new Set(projects.filter(x=>x.type==='site').flatMap(x=>x.tags))];
   const interactive = new Set(['Web Speech API','CSS Variables','LocalStorage','E-commerce','Електронна комерція']);
   const groups = [siteTags.filter(x=>!interactive.has(x)),siteTags.filter(x=>interactive.has(x)),[...new Set(projects.filter(x=>x.type==='bot').flatMap(x=>x.tags))]];
-  return `<section class="hero shell" aria-labelledby="hero-title"><div class="hero-copy"><p class="caption hero-kicker">${u.portfolio}</p>
-    <h1 id="hero-title">${esc(u.hero[0])} <span>${esc(u.hero[1])}</span></h1><p class="hero-intro">${esc(p.intro)}</p>
-    <a class="button" href="#projects">${u.workCTA}${icon('down')}</a></div>${sculpture(u)}
-    <div class="hero-foot caption"><span class="availability">${esc(p.status)}</span><span>${esc(p.location)}</span></div></section>
-    <section class="projects section shell" id="projects" aria-labelledby="projects-title"><p class="section-label caption">01 / ${u.selected}</p>
-    <div class="project-toolbar"><h2 id="projects-title">${u.projects}</h2><div class="project-filters js-only" role="group" aria-label="${u.filters}">${filters}</div></div>
+  return `<section class="hero shell" aria-label="${esc(p.name)} — ${esc(p.role)}">${profileMasthead(ctx)}
+    <div class="hero-grid"><div class="hero-copy"><h2 class="hero-statement">${u.statement[0]}<span>${u.statement[1]}</span></h2><p class="hero-intro">${esc(p.intro)}</p>
+    <div class="hero-actions"><a class="button" href="#projects">${u.workCTA}${icon('down')}</a><a class="text-action" href="#contact">${u.startProject}${icon('external')}</a></div></div>${sculpture(u)}
+    <div class="hero-foot caption"><span>${esc(p.location)}</span><a class="hero-index" href="#projects">${num(projects.length)} / ${u.selected}${icon('down')}</a></div></div></section>
+    <section class="projects section shell" id="projects" aria-labelledby="projects-title"><p class="section-label caption" data-reveal>01 / ${u.selected}</p>
+    <div class="project-toolbar" data-reveal><h2 id="projects-title">${u.projects}</h2><div class="project-filters js-only" role="group" aria-label="${u.filters}">${filters}</div></div>
     <p class="sr-only" id="filter-status" role="status" aria-live="polite"></p><div class="projects-grid">${projects.map((x,i)=>card(x,i,ctx)).join('\n')}</div></section>
-    <section class="about section" id="about" aria-labelledby="about-title"><div class="shell about-grid"><div class="about-identity"><img src="${preview(p.avatar)}" alt="${esc(p.name)} — ${u.artwork}" width="1600" height="875" loading="lazy"><span class="caption handle">${esc(p.nickname)}</span></div>
-    <div class="about-copy"><p class="section-label caption">02 / ${u.about}</p><h2 id="about-title">${esc(p.name)}</h2><p class="caption about-role">${esc(p.role)}</p><p class="about-bio">${esc(p.bio)}</p>
+    <section class="about section" id="about" aria-labelledby="about-title"><div class="shell about-grid"><div class="about-identity" data-reveal><img src="${preview(p.avatar)}" alt="${esc(p.name)} — ${u.artwork}" width="1600" height="875" loading="lazy"></div>
+    <div class="about-copy" data-reveal><p class="section-label caption">02 / ${u.about}</p><h2 id="about-title">${esc(u.aboutHeading)}</h2><p class="about-bio">${esc(p.bio)}</p>
     <dl class="expertise">${groups.map((group,i)=>`<div><dt>${u.expertise[i]}</dt><dd>${group.map(esc).join(' · ')}</dd></div>`).join('')}</dl></div></div></section>${contact(ctx)}`;
 }
 
@@ -90,10 +100,10 @@ function detailContent(project, index, ctx) {
   const next = projects[(index+1)%projects.length];
   return `<article class="project-detail section shell"><a class="text-action breadcrumb" href="${back}">${icon('prev')}${u.back}</a>
     <p class="section-label caption">${num(index+1)} / ${project.type==='bot'?u.bot:u.site}</p>
-    <div class="detail-heading"><h1>${esc(project.title)}</h1><div class="detail-summary"><p>${esc(project.description)}</p>${actions(project,ctx,false)}</div></div>
-    <div class="detail-specs">${project.avatar ? `<img src="${preview(project.avatar)}" width="54" height="54" alt="${u.avatar}: ${esc(project.title)}">` : ''}<span class="caption">${u.stack}</span>${tagList(project,u)}</div>
-    <div id="screens" class="detail-gallery${project.type==='bot'?' detail-gallery-bot':''}">${images.map((src,i)=>`<figure><a class="detail-image-button" href="${esc(src)}" data-gallery="${project.id}" data-gallery-index="${i}" aria-label="${u.enlarge}: ${esc(project.title)}, ${i+1}"><img src="${preview(src)}" alt="${esc(project.title)} — ${u.shot} ${i+1}" loading="${i?'lazy':'eager'}" decoding="async"></a><figcaption class="caption">${u.shot} ${num(i+1)} / ${num(images.length)}</figcaption></figure>`).join('')}</div>
-    <div class="detail-bottom"><a class="text-action" href="${back}">${icon('prev')}${u.back}</a><a class="next-project" href="${localizedPath(lang,projectPath(next))}"><span class="caption">${u.nextProject}</span><span>${esc(next.title)}${icon('arrow')}</span></a></div></article>${contact(ctx)}`;
+    <div class="detail-heading" data-reveal><h1>${esc(project.title)}</h1><div class="detail-summary"><p>${esc(project.description)}</p>${actions(project,ctx,false)}</div></div>
+    <div class="detail-specs" data-reveal>${project.avatar ? `<img src="${preview(project.avatar)}" width="54" height="54" alt="${u.avatar}: ${esc(project.title)}">` : ''}<span class="caption">${u.stack}</span>${tagList(project,u)}</div>
+    <div id="screens" class="detail-gallery${project.type==='bot'?' detail-gallery-bot':''}" data-reveal>${images.map((src,i)=>`<figure><a class="detail-image-button" href="${esc(src)}" data-gallery="${project.id}" data-gallery-index="${i}" aria-label="${u.enlarge}: ${esc(project.title)}, ${i+1}"><img src="${preview(src)}" alt="${esc(project.title)} — ${u.shot} ${i+1}" loading="${i?'lazy':'eager'}" decoding="async"></a><figcaption class="caption">${u.shot} ${num(i+1)} / ${num(images.length)}</figcaption></figure>`).join('')}</div>
+    <div class="detail-bottom" data-reveal><a class="text-action" href="${back}">${icon('prev')}${u.back}</a><a class="next-project" href="${localizedPath(lang,projectPath(next))}"><span class="caption">${u.nextProject}</span><span>${esc(next.title)}${icon('arrow')}</span></a></div></article>${contact(ctx)}`;
 }
 
 function gallery(u) {
@@ -126,7 +136,7 @@ export function render(rawProfile, rawProjects, {lang,route,entry=false}) {
   return `<!doctype html>
 <html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 ${preference}<title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="theme-color" content="#000000"><meta name="color-scheme" content="dark">
-${seo}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/css/styles.css?v=6"><script src="/assets/js/main.js?v=6" defer></script></head>
+${seo}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/css/styles.css?v=7"><script src="/assets/js/main.js?v=7" defer></script></head>
 <body id="top" data-page="${home?'home':missing?'missing':'project'}"><a class="skip-link" href="#main">${u.skip}</a>${header(ctx)}
 <main id="main" tabindex="-1">${body}</main>${footer(ctx)}${missing?'':gallery(u)}
 <script type="application/json" id="page-data">${json({messages,projects:galleryData})}</script><div class="toast" id="toast" role="status" hidden></div></body></html>\n`.replace(/[ \t]+$/gm,'');
