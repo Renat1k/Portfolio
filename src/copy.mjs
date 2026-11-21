@@ -57,9 +57,9 @@ export const ui = {
     shots: 'Знімки екрана', enlarge: 'Збільшити знімок', shot: 'Знімок екрана', prev: 'Попередній знімок', next: 'Наступний знімок', closeGallery: 'Закрити галерею', thumbs: 'Вибрати знімок', shotError: 'Не вдалося завантажити знімок.',
     missing: 'Сторінку не знайдено', missingBody: 'За цією адресою немає сторінки. Перейдіть до портфоліо, щоб переглянути роботи.',
     artLabel: '3D-етюд', artAlt: 'Chrome Infinity: дві переплетені стрічки з титану й темного хрому з тонкою блакитною інкрустацією.',
-    artHint: 'Тягніть, щоб обертати · подвійний клік — фото',
-    artHelp: 'Тягніть, щоб обертати. Стрілки — поворот, Home — початковий ракурс, пробіл — фото або 3D.',
-    runtime: { showing: 'Показано проєктів: {count}', of: 'із', copied: 'Електронну адресу скопійовано.', copyFallback: 'Адресу виділено. Скопіюйте її або відкрийте поштове посилання.', loading: 'Завантаження 3D…', ready: '3D-модель готова до огляду.', photo: 'Модель зафіксовано як фото. Натисніть і утримуйте, щоб обертати.', artError: '3D-перегляд недоступний. Показано студійний рендер.' },
+    artHint: 'Обертається автоматично · тягніть, щоб керувати',
+    artHelp: 'Модель повільно обертається. Тягніть, щоб керувати; стрілки — поворот, Home — початковий ракурс.',
+    runtime: { showing: 'Показано проєктів: {count}', of: 'із', copied: 'Електронну адресу скопійовано.', copyFallback: 'Адресу виділено. Скопіюйте її або відкрийте поштове посилання.', loading: 'Завантаження 3D…', ready: '3D-модель обертається.', artError: '3D-перегляд недоступний. Показано студійний рендер.' },
   },
   en: {
     projects: 'Projects', about: 'About', contact: 'Contact', home: 'Home', top: 'Back to top', skip: 'Skip to content',
@@ -74,9 +74,9 @@ export const ui = {
     shots: 'Screenshots', enlarge: 'Enlarge screenshot', shot: 'Screenshot', prev: 'Previous screenshot', next: 'Next screenshot', closeGallery: 'Close gallery', thumbs: 'Choose a screenshot', shotError: 'Could not load this screenshot.',
     missing: 'Page not found', missingBody: 'There’s no page at this address. Return to the portfolio to explore the work.',
     artLabel: '3D study', artAlt: 'Chrome Infinity: two interlocking ribbons of titanium and smoked chrome with a narrow blue inlay.',
-    artHint: 'Drag to rotate · double-click for photo',
-    artHelp: 'Drag to rotate. Arrow keys turn the model, Home resets the view and Space switches between photo and 3D.',
-    runtime: { showing: 'Projects shown: {count}', of: 'of', copied: 'Email address copied.', copyFallback: 'Email selected. Copy it or open the email link.', loading: 'Loading 3D…', ready: '3D model ready to explore.', photo: 'Model fixed as a photo. Press and hold to rotate again.', artError: '3D view unavailable. Showing the studio render.' },
+    artHint: 'Auto-rotating · drag to explore',
+    artHelp: 'The model rotates slowly. Drag to control it; arrow keys turn the model and Home resets the view.',
+    runtime: { showing: 'Projects shown: {count}', of: 'of', copied: 'Email address copied.', copyFallback: 'Email selected. Copy it or open the email link.', loading: 'Loading 3D…', ready: '3D model rotating.', artError: '3D view unavailable. Showing the studio render.' },
   },
 };
 

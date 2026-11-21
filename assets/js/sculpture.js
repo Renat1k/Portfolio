@@ -102,11 +102,16 @@ export async function mount(canvas, { lite, signal, failed }) {
   const pLoc = gl.getAttribLocation(program,'position'), nLoc = gl.getAttribLocation(program,'normal');
   gl.enableVertexAttribArray(pLoc); gl.enableVertexAttribArray(nLoc);
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  let yaw = motion.matches ? 0 : -.19, pitch = 0, targetYaw = 0, targetPitch = 0, last = 0;
+  let yaw = motion.matches ? 0 : -.19, pitch = 0, targetYaw = 0, targetPitch = 0, last = 0, drawnAt = 0;
   function paint(time) {
     frame = 0;
     if (document.hidden || !visible || signal.aborted) return;
+    const auto = !pointer && !motion.matches;
+    // A gentle idle turn, capped near 30 fps to stay light on laptops and phones.
+    if (auto && time - drawnAt < 32) { schedule(); return; }
+    drawnAt = time;
     const dt = Math.min(48, time - last || 16); last = time;
+    if (auto) targetYaw += dt * .00022;
     const mix = motion.matches ? 1 : 1-Math.exp(-dt/95);
     yaw += (targetYaw-yaw)*mix; pitch += (targetPitch-pitch)*mix;
     const c = Math.cos(yaw), s = Math.sin(yaw), a = Math.cos(pitch), b = Math.sin(pitch);
@@ -125,11 +130,9 @@ export async function mount(canvas, { lite, signal, failed }) {
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, part.indices.buffer);
       gl.drawElements(gl.TRIANGLES,part.indices.count,part.indices.componentType,part.indices.byteOffset||0);
     }
-    if (Math.abs(targetYaw-yaw)+Math.abs(targetPitch-pitch) > .0005) schedule();
+    if (auto || Math.abs(targetYaw-yaw)+Math.abs(targetPitch-pitch) > .0005) schedule();
   }
   function schedule() { if (!frame && visible && !document.hidden && !signal.aborted) frame = requestAnimationFrame(paint); }
-  function pause() { cancelAnimationFrame(frame); frame = 0; }
-  function resume() { schedule(); }
   function resize() {
     const width = canvas.clientWidth, height = canvas.clientHeight;
     if (!width || !height) return;
@@ -149,9 +152,9 @@ export async function mount(canvas, { lite, signal, failed }) {
     if (!pointer || pointer.id !== e.pointerId) return;
     rotate((e.clientX-pointer.x)*.009,(e.clientY-pointer.y)*.007); pointer.x=e.clientX; pointer.y=e.clientY;
   });
-  on(canvas,'pointerup',e => { if(pointer?.id===e.pointerId){ try{canvas.releasePointerCapture(e.pointerId);}catch{} pointer=null; } });
-  on(canvas,'pointercancel',e => { if(pointer?.id===e.pointerId){ try{canvas.releasePointerCapture(e.pointerId);}catch{} pointer=null; } });
-  on(canvas,'lostpointercapture',() => { pointer = null; });
+  on(canvas,'pointerup',e => { if(pointer?.id===e.pointerId){ try{canvas.releasePointerCapture(e.pointerId);}catch{} pointer=null; } schedule(); });
+  on(canvas,'pointercancel',e => { if(pointer?.id===e.pointerId){ try{canvas.releasePointerCapture(e.pointerId);}catch{} pointer=null; } schedule(); });
+  on(canvas,'lostpointercapture',() => { pointer = null; schedule(); });
   on(canvas,'keydown',e => {
     const delta = {ArrowLeft:[-.23,0],ArrowRight:[.23,0],ArrowUp:[0,-.15],ArrowDown:[0,.15]}[e.key];
     if (delta || e.key === 'Home') { e.preventDefault(); delta ? rotate(...delta) : reset(); }
@@ -159,5 +162,5 @@ export async function mount(canvas, { lite, signal, failed }) {
   on(document,'visibilitychange',schedule); on(motion,'change',schedule);
   observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (visible) schedule(); else { cancelAnimationFrame(frame); frame=0; } });
   observer.observe(canvas); resizer = new ResizeObserver(resize); resizer.observe(canvas); resize();
-  return { rotate, reset, pause, resume };
+  return { rotate, reset };
 }

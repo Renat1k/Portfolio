@@ -58,12 +58,13 @@ try {
   const desktop=await browser.newContext({locale:'en-US',viewport:{width:1440,height:900},permissions:['clipboard-read','clipboard-write']});
   await instrument(desktop); const page=await desktop.newPage();observe(page);
   const traffic=[]; page.on('request',r=>traffic.push(new URL(r.url()).pathname));
-  await test('Default language is independent of the browser locale; the 3D model loads and rotates without buttons',async()=>{
+  await test('Default language is independent of the browser locale; 3D replaces the poster and has no controls',async()=>{
     await go(page);assert.equal(await lang(page),defaultLocale);
     assert.equal(await page.locator('.project-card').count(),data.length);
     await page.waitForSelector('#sculpture[data-state="live"]',{timeout:15000});
     assert.ok(traffic.some(s=>s.endsWith('/infinity.glb')));
     assert.equal(await page.locator('#sculpture canvas').count(),1);
+    assert.equal(await page.locator('.sculpture-poster').isVisible(),false);
     assert.equal(await page.locator('#art-toggle, #art-left, #art-right, #art-reset').count(),0);
     assert.ok(await page.locator('#sculpture canvas').evaluate(el=>el.tabIndex===0));await audit(page);
   });
@@ -108,22 +109,16 @@ try {
       await audit(page);
     }
   });
-  await test('GL draws; drag and keys rotate; double-click freezes as photo; pressing wakes it; context loss falls back',async()=>{
+  await test('GL auto-rotates; the poster is gone; drag and keys control a canvas that fills the frame; context loss falls back',async()=>{
     await go(page,'/en/');const art=page.locator('#sculpture');await page.waitForSelector('#sculpture[data-state="live"]');await page.waitForTimeout(1100);
-    const canvas=art.locator('canvas');assert.ok(await canvasDraws(page)>0);const first=await canvas.screenshot();
-    await canvas.focus();await page.keyboard.press('ArrowRight');await page.waitForTimeout(500);assert.notDeepEqual(await canvas.screenshot(),first);
-    const before=await canvas.screenshot(),r=await canvas.boundingBox();
-    await page.mouse.move(r.x+r.width/2,r.y+r.height/2);await page.mouse.down();await page.mouse.move(r.x+r.width*.7,r.y+r.height*.6,{steps:8});await page.mouse.up();
-    await page.waitForTimeout(400);assert.notDeepEqual(await canvas.screenshot(),before);
-    await canvas.dblclick({position:{x:r.width*.3,y:r.height*.5}});await page.waitForFunction(()=>document.querySelector('#sculpture').dataset.state==='still');
-    await page.waitForFunction(()=>getComputedStyle(document.querySelector('#sculpture canvas')).opacity==='0');
-    assert.ok(await art.locator('img').isVisible());assert.match(await page.locator('#art-status').textContent(),/fixed as a photo/);
-    const frozen=await canvasDraws(page);await page.waitForTimeout(350);assert.equal(await canvasDraws(page),frozen);
-    await page.mouse.move(r.x+r.width*.5,r.y+r.height*.5);await page.mouse.down();await page.waitForFunction(()=>document.querySelector('#sculpture').dataset.state==='live');
-    await page.mouse.move(r.x+r.width*.7,r.y+r.height*.55,{steps:8});await page.mouse.up();await page.waitForTimeout(300);assert.ok(await canvasDraws(page)>frozen);
-    await canvas.focus();await page.keyboard.press('Space');await page.waitForFunction(()=>document.querySelector('#sculpture').dataset.state==='still');
-    await page.keyboard.press('Space');await page.waitForFunction(()=>document.querySelector('#sculpture').dataset.state==='live');
-    await page.waitForTimeout(1200);const idle=await canvasDraws(page);await page.waitForTimeout(250);assert.equal(await canvasDraws(page),idle);await audit(page);
+    const canvas=art.locator('canvas');assert.ok(await canvasDraws(page)>0);assert.equal(await art.locator('img').isVisible(),false);assert.ok(await canvas.isVisible());
+    const first=await canvas.screenshot();await page.waitForTimeout(850);assert.notDeepEqual(await canvas.screenshot(),first,'auto-rotation');
+    const r=await canvas.boundingBox();await page.mouse.move(r.x+r.width/2,r.y+r.height/2);await page.mouse.down();await page.waitForTimeout(120);
+    const held=await canvas.screenshot();await page.mouse.move(r.x+r.width*.7,r.y+r.height*.6,{steps:8});await page.waitForTimeout(220);
+    assert.notDeepEqual(await canvas.screenshot(),held,'manual drag');await page.mouse.up();await page.waitForTimeout(350);
+    const resumed=await canvas.screenshot();await page.waitForTimeout(750);assert.notDeepEqual(await canvas.screenshot(),resumed,'auto-rotation resumes after release');
+    await canvas.focus();await page.keyboard.press('ArrowRight');await page.waitForTimeout(350);await page.keyboard.press('Home');await page.waitForTimeout(350);
+    await audit(page);
     await canvas.evaluate(el=>el.getContext('webgl').getExtension('WEBGL_lose_context').loseContext());
     await page.waitForSelector('#sculpture[data-state="still"]');assert.ok(await art.locator('img').isVisible());assert.match(await page.locator('#art-status').textContent(),/studio render/);
   });
@@ -132,6 +127,7 @@ try {
     await instrument(ctx,{low:true});const p=await ctx.newPage();observe(p);const req=[];p.on('request',r=>req.push(r.url()));await go(p,'/uk/');
     assert.ok(req.some(u=>u.endsWith('infinity-640.webp')));await p.waitForSelector('#sculpture[data-state="live"]',{timeout:15000});
     assert.ok(req.some(u=>u.endsWith('infinity-lite.glb')));assert.ok(!req.some(u=>u.endsWith('/infinity.glb')));
+    assert.equal(await p.locator('.sculpture-poster').isVisible(),false);
     assert.equal(await p.locator('#art-toggle, #art-left, #art-right, #art-reset').count(),0);
     assert.ok(await p.locator('canvas').evaluate(c=>c.width<=Math.ceil(c.clientWidth)));
     await p.locator('#menu-toggle').tap();assert.ok(await p.locator('#menu-dialog').isVisible());await audit(p);
@@ -143,7 +139,6 @@ try {
     await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:view.x+view.width*.25,y}]});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await p.waitForFunction(()=>document.querySelector('#gallery-counter').textContent==='02 / 03');
     await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.querySelector('#gallery-dialog').open);
-    // Synthetic CDP drags can suppress the next synthesized tap in Chromium, so
     // Escape closes the gallery and the direct-touch rotation check runs last.
     await p.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await p.waitForTimeout(500);
     assert.equal(await p.locator('#sculpture').getAttribute('data-state'),'live');

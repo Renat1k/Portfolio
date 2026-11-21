@@ -109,11 +109,11 @@
 
   const art=$('#sculpture'); if(!art) return;
   const frame=art.querySelector('.sculpture-frame'), status=$('#art-status'), poster=art.querySelector('picture');
-  let controller, viewer, canvas, live=false, tapStart=null, lastTap=0;
-  function fail(current) {
+  let controller, viewer, canvas;
+  function fallback(current) {
     if (current.signal.aborted) return;
-    current.abort(); canvas?.remove(); canvas=null; viewer=null; live=false;
-    art.dataset.state='still'; status.textContent=t.artError;
+    current.abort(); canvas?.remove(); canvas=null; viewer=null;
+    poster.hidden=false; art.dataset.state='still'; status.textContent=t.artError;
   }
   async function load() {
     if (viewer || controller) return;
@@ -125,36 +125,14 @@
     frame.append(canvas);
     const lite=matchMedia('(max-width: 800px), (pointer: coarse)').matches || navigator.connection?.saveData || (navigator.deviceMemory??8)<=4 || (navigator.hardwareConcurrency??8)<=4;
     try {
-      const {mount}=await import('./sculpture.js?v=1'); current.signal.throwIfAborted();
-      viewer=await mount(canvas,{lite,signal:current.signal,failed:()=>fail(current)});
-      current.signal.throwIfAborted(); live=true; art.dataset.state='live'; poster.setAttribute('aria-hidden','true'); status.textContent=t.ready;
-    } catch { fail(current); }
+      const {mount}=await import('./sculpture.js?v=2'); current.signal.throwIfAborted();
+      viewer=await mount(canvas,{lite,signal:current.signal,failed:()=>fallback(current)});
+      current.signal.throwIfAborted();
+      // No still image over the canvas: the sculpture itself is the only layer.
+      poster.hidden=true; art.dataset.state='live'; status.textContent=t.ready;
+    } catch { fallback(current); }
     finally { if (controller===current) controller=null; }
   }
-  function still() {
-    if (!viewer) return;
-    live=false; art.dataset.state='still'; viewer.reset(); viewer.pause(); status.textContent=t.photo;
-  }
-  function wake() {
-    if (!viewer) { load(); return; }
-    if (live) return;
-    live=true; art.dataset.state='live'; viewer.resume(); status.textContent=t.ready;
-  }
-  // Direct manipulation from the first paint. While the photo is frozen, the
-  // transparent canvas still receives a press, wakes WebGL and starts dragging.
-  frame.addEventListener('pointerdown',e=>{ if(!live && e.target===canvas) wake(); },true);
-  frame.addEventListener('dblclick',e=>{ if(e.target===canvas){ e.preventDefault(); still(); } });
-  frame.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') tapStart={x:e.clientX,y:e.clientY}; },true);
-  frame.addEventListener('pointerup',e=>{
-    if(e.pointerType!=='touch'||e.target!==canvas||!tapStart) return;
-    const moved=Math.hypot(e.clientX-tapStart.x,e.clientY-tapStart.y)>12; tapStart=null;
-    if(moved) return;
-    const now=Date.now(); if(now-lastTap<320){still();lastTap=0;} else lastTap=now;
-  });
-  frame.addEventListener('keydown',e=>{
-    if(e.target!==canvas||(e.key!==' '&&e.key!=='Enter')) return;
-    e.preventDefault(); live?still():wake();
-  });
   const observer=new IntersectionObserver(([entry])=>{
     if(entry.isIntersecting){ observer.disconnect(); load(); }
   },{rootMargin:'160px'}); observer.observe(frame);
