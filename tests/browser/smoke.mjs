@@ -117,6 +117,10 @@ try {
     const held=await canvas.screenshot();await page.mouse.move(r.x+r.width*.7,r.y+r.height*.6,{steps:8});await page.waitForTimeout(220);
     assert.notDeepEqual(await canvas.screenshot(),held,'manual drag');await page.mouse.up();await page.waitForTimeout(350);
     const resumed=await canvas.screenshot();await page.waitForTimeout(750);assert.notDeepEqual(await canvas.screenshot(),resumed,'auto-rotation resumes after release');
+    // A vertical pull tilts the sculpture, then auto-levels back to pitch 0.
+    await page.mouse.move(r.x+r.width*.5,r.y+r.height*.5);await page.mouse.down();
+    await page.mouse.move(r.x+r.width*.5,r.y+r.height*.78,{steps:8});await page.waitForFunction(()=>document.querySelector('#sculpture canvas').dataset.tilt==='tilted');
+    await page.mouse.up();await page.waitForFunction(()=>document.querySelector('#sculpture canvas').dataset.tilt==='level',{timeout:4000});
     await canvas.focus();await page.keyboard.press('ArrowRight');await page.waitForTimeout(350);await page.keyboard.press('Home');await page.waitForTimeout(350);
     await audit(page);
     await canvas.evaluate(el=>el.getContext('webgl').getExtension('WEBGL_lose_context').loseContext());

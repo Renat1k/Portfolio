@@ -125,7 +125,7 @@
     frame.append(canvas);
     const lite=matchMedia('(max-width: 800px), (pointer: coarse)').matches || navigator.connection?.saveData || (navigator.deviceMemory??8)<=4 || (navigator.hardwareConcurrency??8)<=4;
     try {
-      const {mount}=await import('./sculpture.js?v=2'); current.signal.throwIfAborted();
+      const {mount}=await import('./sculpture.js?v=4'); current.signal.throwIfAborted();
       viewer=await mount(canvas,{lite,signal:current.signal,failed:()=>fallback(current)});
       current.signal.throwIfAborted();
       // No still image over the canvas: the sculpture itself is the only layer.

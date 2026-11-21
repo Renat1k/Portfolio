@@ -107,13 +107,17 @@ export async function mount(canvas, { lite, signal, failed }) {
     frame = 0;
     if (document.hidden || !visible || signal.aborted) return;
     const auto = !pointer && !motion.matches;
-    // A gentle idle turn, capped near 30 fps to stay light on laptops and phones.
+    // A slow, quiet idle turn, capped near 30 fps to stay light on laptops and phones.
     if (auto && time - drawnAt < 32) { schedule(); return; }
     drawnAt = time;
     const dt = Math.min(48, time - last || 16); last = time;
-    if (auto) targetYaw += dt * .00022;
-    const mix = motion.matches ? 1 : 1-Math.exp(-dt/95);
+    if (auto) targetYaw += dt * .000095;
+    // Vertical tilt is a temporary inspection angle: ease it back to level.
+    if (!pointer) targetPitch = 0;
+    const mix = motion.matches ? 1 : 1-Math.exp(-dt/(pointer ? 75 : 190));
     yaw += (targetYaw-yaw)*mix; pitch += (targetPitch-pitch)*mix;
+    const tilt = Math.abs(pitch) > .012 ? 'tilted' : 'level';
+    if (canvas.dataset.tilt !== tilt) canvas.dataset.tilt = tilt;
     const c = Math.cos(yaw), s = Math.sin(yaw), a = Math.cos(pitch), b = Math.sin(pitch);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.uniformMatrix3fv(uniform.rotation, false, [c,b*s,-a*s, 0,a,b, s,-b*c,a*c]);

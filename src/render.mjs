@@ -126,7 +126,7 @@ export function render(rawProfile, rawProjects, {lang,route,entry=false}) {
   return `<!doctype html>
 <html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 ${preference}<title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="theme-color" content="#000000"><meta name="color-scheme" content="dark">
-${seo}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/css/styles.css?v=4"><script src="/assets/js/main.js?v=4" defer></script></head>
+${seo}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/css/styles.css?v=6"><script src="/assets/js/main.js?v=6" defer></script></head>
 <body id="top" data-page="${home?'home':missing?'missing':'project'}"><a class="skip-link" href="#main">${u.skip}</a>${header(ctx)}
 <main id="main" tabindex="-1">${body}</main>${footer(ctx)}${missing?'':gallery(u)}
 <script type="application/json" id="page-data">${json({messages,projects:galleryData})}</script><div class="toast" id="toast" role="status" hidden></div></body></html>\n`.replace(/[ \t]+$/gm,'');
