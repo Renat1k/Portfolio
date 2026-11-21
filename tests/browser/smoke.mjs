@@ -71,6 +71,7 @@ try {
     assert.equal(await page.locator('#sculpture canvas').count(),1);
     assert.equal(await page.locator('.sculpture-poster').isVisible(),false);
     assert.equal(await page.locator('#art-toggle, #art-left, #art-right, #art-reset').count(),0);
+    assert.equal(await page.locator('#art-launch').isVisible(),false);
     assert.ok(await page.locator('#sculpture canvas').evaluate(el=>el.tabIndex===0));
     await page.locator('#about').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelector('.will-reveal.is-visible'));
     await audit(page);
@@ -133,12 +134,16 @@ try {
     await canvas.evaluate(el=>el.getContext('webgl').getExtension('WEBGL_lose_context').loseContext());
     await page.waitForSelector('#sculpture[data-state="still"]');assert.ok(await art.locator('img').isVisible());assert.match(await page.locator('#art-status').textContent(),/studio render/);
   });
-  await test('Mobile: light GLB loads automatically, direct touch rotation, reduced motion and Ukrainian gallery controls',async()=>{
+  await test('Mobile: photo with launch button first, then light GLB, direct touch rotation and Ukrainian gallery controls',async()=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:3,reducedMotion:'reduce'});
     await instrument(ctx,{low:true});const p=await ctx.newPage();observe(p);const req=[];p.on('request',r=>req.push(r.url()));await go(p,'/uk/');
-    assert.ok(req.some(u=>u.endsWith('infinity-640.webp')));await p.waitForSelector('#sculpture[data-state="live"]',{timeout:15000});
+    assert.ok(req.some(u=>u.endsWith('infinity-640.webp')));assert.ok(!req.some(u=>/\.glb$|sculpture\.js/.test(u)));
+    assert.equal(await p.locator('#sculpture').getAttribute('data-state'),'still');
+    assert.ok(await p.locator('.sculpture-poster').isVisible());assert.ok(await p.locator('#art-launch').isVisible());
+    assert.equal(await p.locator('#art-launch span').textContent(),'Запустити 3D');
+    await p.locator('#art-launch').tap();await p.waitForSelector('#sculpture[data-state="live"]',{timeout:15000});
     assert.ok(req.some(u=>u.endsWith('infinity-lite.glb')));assert.ok(!req.some(u=>u.endsWith('/infinity.glb')));
-    assert.equal(await p.locator('.sculpture-poster').isVisible(),false);
+    assert.equal(await p.locator('.sculpture-poster').isVisible(),false);assert.equal(await p.locator('#art-launch').isVisible(),false);
     assert.equal(await p.locator('#art-toggle, #art-left, #art-right, #art-reset').count(),0);
     assert.ok(await p.locator('canvas').evaluate(c=>c.width<=Math.ceil(c.clientWidth)));
     await p.locator('#menu-toggle').tap();assert.ok(await p.locator('#menu-dialog').isVisible());await audit(p);
@@ -167,8 +172,8 @@ try {
     for(const l of locales){const r=await p.goto(`${base}/${l}/missing-portfolio-page/`);assert.equal(r.status(),404);assert.equal(await lang(p),l);await audit(p);}
     await p.locator('[data-language="uk"]').click();assert.equal(await lang(p),'uk');await ctx.close();
     const nojs=await browser.newContext({javaScriptEnabled:false,viewport:{width:320,height:760}});const plain=await nojs.newPage();
-    await go(plain);assert.equal(await lang(plain),defaultLocale);assert.equal(await plain.locator('.project-card').count(),data.length);assert.ok(await plain.locator('.sculpture-poster').isVisible());
-    assert.ok(!(await plain.locator('#art-toggle').isVisible()));await plain.locator('[data-language="en"]').click();await plain.locator('.project-title a').first().click();assert.equal(await lang(plain),'en');await nojs.close();
+    await go(plain);assert.equal(await lang(plain),defaultLocale);    assert.equal(await plain.locator('.project-card').count(),data.length);assert.ok(await plain.locator('.sculpture-poster').isVisible());
+    assert.equal(await plain.locator('#art-launch').isVisible(),false);assert.ok(!(await plain.locator('#art-toggle').isVisible()));await plain.locator('[data-language="en"]').click();await plain.locator('.project-title a').first().click();assert.equal(await lang(plain),'en');await nojs.close();
   });
   assert.deepEqual(errors,[]);console.log(`Verified ${checks.length} browser suites at ${base}.`);
 } finally { await browser?.close();server?.kill(); }

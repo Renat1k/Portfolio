@@ -70,6 +70,7 @@ h2{font-size:clamp(40px,4.5vw,62px);letter-spacing:3px}
 .sculpture figcaption{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 20px;margin:12px 3% 0;padding-top:14px;border-top:1px solid var(--line)}
 .sculpture-credit{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}.sculpture-credit>span:last-child{font:400 18px/1.2 var(--display);letter-spacing:1.5px;text-transform:uppercase}
 .sculpture-hint{margin-left:auto;color:var(--muted);font:400 9px/1.5 var(--mono);letter-spacing:1px;text-transform:uppercase;text-align:right}
+.art-launch{display:none;gap:12px}
 
 .project-toolbar{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:18px 36px;padding-bottom:24px;border-bottom:1px solid var(--line);margin-bottom:36px}
 .project-filters{display:flex;gap:4px}.filter-button{min-height:44px;padding:8px 14px;border:1px solid transparent;border-radius:9999px;color:var(--muted)}
@@ -128,7 +129,8 @@ dialog{color:var(--ink);background:var(--canvas);border:1px solid var(--rim);pad
   .profile{grid-template-columns:auto minmax(0,1fr);gap:14px;padding-block:20px}.profile-avatar{width:58px;height:58px}.profile h1{font-size:clamp(34px,10.5vw,46px);letter-spacing:2px}.profile-handle{font-size:8px;letter-spacing:1px}.profile-role{font-size:9px;line-height:1.45;letter-spacing:.7px}
   .profile-contact{flex-direction:column;align-items:flex-start;gap:9px}.profile-links{justify-content:flex-start;gap:8px 16px}.profile-links .button{min-height:40px;padding:8px 14px;font-size:10px;gap:12px}
   .hero{padding-top:30px;gap:18px}.hero-grid{grid-template-columns:minmax(0,1fr);gap:26px}.hero-statement{font-size:clamp(32px,9vw,46px);letter-spacing:1.5px}.hero-intro{margin:14px 0 20px;font-size:20px;max-width:34ch}
-  .sculpture figcaption{margin:0;padding-top:8px;column-gap:8px}.sculpture-credit{flex-direction:column;align-items:start;gap:2px}.sculpture-hint{margin-left:0;text-align:left;font-size:8px}.hero-foot{margin-top:0;gap:8px;font-size:9px;letter-spacing:.8px;padding-block:14px}
+  .sculpture figcaption{margin:0;padding-top:8px;column-gap:8px}.sculpture-credit{flex-direction:column;align-items:start;gap:2px}.sculpture-hint{margin-left:0;text-align:left;font-size:8px}
+  .sculpture[data-state="still"] .sculpture-hint{display:none}.sculpture[data-state="still"] .art-launch{display:inline-flex;flex:1 1 100%;justify-content:center;margin-top:6px}.hero-foot{margin-top:0;gap:8px;font-size:9px;letter-spacing:.8px;padding-block:14px}
   .project-toolbar{gap:18px;align-items:start;flex-direction:column;margin-bottom:24px;padding-bottom:16px}.filter-button{padding-inline:12px}.section-label{margin-bottom:16px}.projects-grid,.about-grid,.contact-grid,.detail-heading,.detail-gallery,.detail-gallery-bot{grid-template-columns:minmax(0,1fr)}
   .project-visual-bot{padding:16px}.about-identity{max-width:320px}.about-identity img{aspect-ratio:16/10}.contact-grid,.detail-heading{gap:22px}.contact-bottom{margin-top:25px}.email-group{gap:8px}.contact-email{font-size:clamp(22px,6.3vw,34px)}
   .detail-gallery-bot .detail-image-button{height:auto;max-height:none;padding:16px}.detail-gallery-bot .detail-image-button img{max-height:520px}.detail-bottom{align-items:start;flex-direction:column}.next-project{max-width:100%;text-align:left}.next-project>span:last-child{justify-content:start}.site-footer{gap:6px}.site-footer p{font-size:14px}

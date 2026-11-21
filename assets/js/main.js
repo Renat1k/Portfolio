@@ -132,7 +132,8 @@
   });
 
   const art=$('#sculpture'); if(!art) return;
-  const frame=art.querySelector('.sculpture-frame'), status=$('#art-status'), poster=art.querySelector('picture');
+  const frame=art.querySelector('.sculpture-frame'), status=$('#art-status'), poster=art.querySelector('picture'), launch=$('#art-launch');
+  const phone=matchMedia('(max-width: 700px)');
   let controller, viewer, canvas;
   function fallback(current) {
     if (current.signal.aborted) return;
@@ -157,8 +158,12 @@
     } catch { fallback(current); }
     finally { if (controller===current) controller=null; }
   }
+  // Phones inspect the authored studio image first, then opt into the lighter
+  // 3D asset. Desktop keeps the immediate, automatic sculpture.
+  launch?.addEventListener('click',load);
+  phone.addEventListener('change',event=>{ if(!event.matches && !viewer) load(); });
   const observer=new IntersectionObserver(([entry])=>{
-    if(entry.isIntersecting){ observer.disconnect(); load(); }
+    if(entry.isIntersecting){ observer.disconnect(); if(!phone.matches) load(); }
   },{rootMargin:'160px'}); observer.observe(frame);
   window.addEventListener('pagehide',()=>controller?.abort());
 })();

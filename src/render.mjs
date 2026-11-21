@@ -9,7 +9,7 @@ const preview = s => asset(s).replace(/\.(png|jpe?g)$/i,'.webp');
 const shots = p => (p.screenshots || [p.image]).map(asset);
 const glyphs = { arrow:'M4 12h15m-6-6 6 6-6 6', external:'M6 18 18 6M7 6h11v11', down:'M12 4v16m-6-6 6 6 6-6', up:'M12 20V4m-6 6 6-6 6 6',
   prev:'m14 5-7 7 7 7', next:'m10 5 7 7-7 7', close:'m6 6 12 12M18 6 6 18', menu:'M3 8h18M3 16h18',
-  copy:'M8 6H4v15h11v-4M8 3h11v14H8z' };
+  copy:'M8 6H4v15h11v-4M8 3h11v14H8z', cube:'m12 2 9 5v10l-9 5-9-5V7zm0 10L3 7m9 5 9-5m-9 5v10' };
 const icon = name => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${glyphs[name]}"/></svg>`;
 const ext = (url, label, aria, className='text-action') => `<a class="${className}" href="${esc(url)}"${url.startsWith('mailto:') ? '' : ' target="_blank" rel="noopener noreferrer"'}${aria ? ` aria-label="${esc(aria)}"` : ''}>${esc(label)}${icon('external')}</a>`;
 const tagList = (p, u) => `<ul class="tags" aria-label="${u.stack}">${p.tags.map(tag => `<li>${esc(tag)}</li>`).join('')}</ul>`;
@@ -37,7 +37,7 @@ function sculpture(u) {
   return `<figure class="sculpture" id="sculpture" data-state="still">
     <div class="sculpture-frame"><picture><source media="(max-width: 700px)" srcset="/assets/sculpture/infinity-640.webp"><img class="sculpture-poster" src="/assets/sculpture/infinity-1280.webp" width="1280" height="800" fetchpriority="high" alt="${u.artAlt}"></picture></div>
     <figcaption><div class="sculpture-credit"><span class="caption">${u.artLabel}</span><span>Chrome Infinity</span></div>
-    <p class="sculpture-hint" id="art-hint">${u.artHint}</p></figcaption>
+    <p class="sculpture-hint" id="art-hint">${u.artHint}</p><button class="button button-small art-launch js-only" id="art-launch" type="button">${icon('cube')}<span>${u.launch3d}</span></button></figcaption>
     <p class="sr-only" id="art-status" role="status" aria-live="polite"></p><p class="sr-only" id="art-help">${u.artHelp}</p></figure>`;
 }
 
@@ -136,7 +136,7 @@ export function render(rawProfile, rawProjects, {lang,route,entry=false}) {
   return `<!doctype html>
 <html lang="${lang}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 ${preference}<title>${esc(title)}</title><meta name="description" content="${esc(description)}"><meta name="theme-color" content="#000000"><meta name="color-scheme" content="dark">
-${seo}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/css/styles.css?v=7"><script src="/assets/js/main.js?v=7" defer></script></head>
+${seo}<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/css/styles.css?v=8"><script src="/assets/js/main.js?v=8" defer></script></head>
 <body id="top" data-page="${home?'home':missing?'missing':'project'}"><a class="skip-link" href="#main">${u.skip}</a>${header(ctx)}
 <main id="main" tabindex="-1">${body}</main>${footer(ctx)}${missing?'':gallery(u)}
 <script type="application/json" id="page-data">${json({messages,projects:galleryData})}</script><div class="toast" id="toast" role="status" hidden></div></body></html>\n`.replace(/[ \t]+$/gm,'');
