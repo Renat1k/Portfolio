@@ -108,32 +108,55 @@
   });
 
   const art=$('#sculpture'); if(!art) return;
-  const toggle=$('#art-toggle'), tools=$('#art-tools'), status=$('#art-status');
-  let controller, viewer, canvas;
-  function still(message='') {
-    controller?.abort(); controller=null; viewer=null;
-    const hadFocus=canvas && document.activeElement===canvas;
-    canvas?.remove(); canvas=null; art.dataset.state='still'; tools.hidden=true; art.querySelector('picture').removeAttribute('aria-hidden');
-    toggle.disabled=false;toggle.setAttribute('aria-pressed','false');toggle.querySelector('span').textContent=t.view3d;status.textContent=message;
-    toggle.removeAttribute('aria-busy'); if(hadFocus) toggle.focus({preventScroll:true});
+  const frame=art.querySelector('.sculpture-frame'), status=$('#art-status'), poster=art.querySelector('picture');
+  let controller, viewer, canvas, live=false, tapStart=null, lastTap=0;
+  function fail(current) {
+    if (current.signal.aborted) return;
+    current.abort(); canvas?.remove(); canvas=null; viewer=null; live=false;
+    art.dataset.state='still'; status.textContent=t.artError;
   }
-  toggle.addEventListener('click',async()=>{
-    if(controller) {still();return;}
+  async function load() {
+    if (viewer || controller) return;
     const current=controller=new AbortController();
-    art.dataset.state='loading'; toggle.setAttribute('aria-busy','true'); toggle.querySelector('span').textContent=t.cancel; status.textContent=t.loading;
-    canvas=document.createElement('canvas'); canvas.setAttribute('role','group');canvas.setAttribute('aria-label',t.artAlt);
-    canvas.setAttribute('aria-describedby','art-help'); canvas.tabIndex=-1; art.querySelector('.sculpture-frame').append(canvas);
-    const lite = matchMedia('(max-width: 800px), (pointer: coarse)').matches || navigator.connection?.saveData || (navigator.deviceMemory??8)<=4 || (navigator.hardwareConcurrency??8)<=4;
+    art.dataset.state='loading'; status.textContent=t.loading;
+    canvas=document.createElement('canvas');
+    canvas.setAttribute('role','group'); canvas.setAttribute('aria-label',t.artAlt);
+    canvas.setAttribute('aria-describedby','art-hint art-help'); canvas.tabIndex=0;
+    frame.append(canvas);
+    const lite=matchMedia('(max-width: 800px), (pointer: coarse)').matches || navigator.connection?.saveData || (navigator.deviceMemory??8)<=4 || (navigator.hardwareConcurrency??8)<=4;
     try {
       const {mount}=await import('./sculpture.js?v=1'); current.signal.throwIfAborted();
-      const loaded=await mount(canvas,{lite,signal:current.signal,failed:()=>{if(controller===current) still(t.artError);}});
-      current.signal.throwIfAborted(); viewer=loaded;
-      art.dataset.state='live';tools.hidden=false;art.querySelector('picture').setAttribute('aria-hidden','true');toggle.setAttribute('aria-pressed','true');toggle.querySelector('span').textContent=t.still;
-      status.textContent=t.ready;canvas.tabIndex=0;canvas.focus({preventScroll:true});
-    } catch {if(controller===current) still(t.artError);}
-    finally { if (!controller || controller===current) toggle.removeAttribute('aria-busy'); }
+      viewer=await mount(canvas,{lite,signal:current.signal,failed:()=>fail(current)});
+      current.signal.throwIfAborted(); live=true; art.dataset.state='live'; poster.setAttribute('aria-hidden','true'); status.textContent=t.ready;
+    } catch { fail(current); }
+    finally { if (controller===current) controller=null; }
+  }
+  function still() {
+    if (!viewer) return;
+    live=false; art.dataset.state='still'; viewer.reset(); viewer.pause(); status.textContent=t.photo;
+  }
+  function wake() {
+    if (!viewer) { load(); return; }
+    if (live) return;
+    live=true; art.dataset.state='live'; viewer.resume(); status.textContent=t.ready;
+  }
+  // Direct manipulation from the first paint. While the photo is frozen, the
+  // transparent canvas still receives a press, wakes WebGL and starts dragging.
+  frame.addEventListener('pointerdown',e=>{ if(!live && e.target===canvas) wake(); },true);
+  frame.addEventListener('dblclick',e=>{ if(e.target===canvas){ e.preventDefault(); still(); } });
+  frame.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') tapStart={x:e.clientX,y:e.clientY}; },true);
+  frame.addEventListener('pointerup',e=>{
+    if(e.pointerType!=='touch'||e.target!==canvas||!tapStart) return;
+    const moved=Math.hypot(e.clientX-tapStart.x,e.clientY-tapStart.y)>12; tapStart=null;
+    if(moved) return;
+    const now=Date.now(); if(now-lastTap<320){still();lastTap=0;} else lastTap=now;
   });
-  $('#art-left').addEventListener('click',()=>viewer?.rotate(-.35)); $('#art-right').addEventListener('click',()=>viewer?.rotate(.35));
-  $('#art-reset').addEventListener('click',()=>viewer?.reset());
-  window.addEventListener('pagehide',()=>still());
+  frame.addEventListener('keydown',e=>{
+    if(e.target!==canvas||(e.key!==' '&&e.key!=='Enter')) return;
+    e.preventDefault(); live?still():wake();
+  });
+  const observer=new IntersectionObserver(([entry])=>{
+    if(entry.isIntersecting){ observer.disconnect(); load(); }
+  },{rootMargin:'160px'}); observer.observe(frame);
+  window.addEventListener('pagehide',()=>controller?.abort());
 })();

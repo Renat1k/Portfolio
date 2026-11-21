@@ -9,7 +9,7 @@ const preview = s => asset(s).replace(/\.(png|jpe?g)$/i,'.webp');
 const shots = p => (p.screenshots || [p.image]).map(asset);
 const glyphs = { arrow:'M4 12h15m-6-6 6 6-6 6', external:'M6 18 18 6M7 6h11v11', down:'M12 4v16m-6-6 6 6 6-6', up:'M12 20V4m-6 6 6-6 6 6',
   prev:'m14 5-7 7 7 7', next:'m10 5 7 7-7 7', close:'m6 6 12 12M18 6 6 18', menu:'M3 8h18M3 16h18',
-  copy:'M8 6H4v15h11v-4M8 3h11v14H8z', cube:'m12 2 9 5v10l-9 5-9-5V7zm0 10L3 7m9 5 9-5m-9 5v10', reset:'M4 10a8 8 0 1 1 1 7M4 4v6h6' };
+  copy:'M8 6H4v15h11v-4M8 3h11v14H8z' };
 const icon = name => `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="${glyphs[name]}"/></svg>`;
 const ext = (url, label, aria) => `<a class="text-action" href="${esc(url)}" target="_blank" rel="noopener noreferrer"${aria ? ` aria-label="${esc(aria)}"` : ''}>${esc(label)}${icon('external')}</a>`;
 const tagList = (p, u) => `<ul class="tags" aria-label="${u.stack}">${p.tags.map(tag => `<li>${esc(tag)}</li>`).join('')}</ul>`;
@@ -37,9 +37,8 @@ function sculpture(u) {
   return `<figure class="sculpture" id="sculpture" data-state="still">
     <div class="sculpture-frame"><picture><source media="(max-width: 700px)" srcset="/assets/sculpture/infinity-640.webp"><img class="sculpture-poster" src="/assets/sculpture/infinity-1280.webp" width="1280" height="800" fetchpriority="high" alt="${u.artAlt}"></picture></div>
     <figcaption><div class="sculpture-credit"><span class="caption">${u.artLabel}</span><span>Chrome Infinity</span></div>
-    <div class="art-buttons js-only"><div id="art-tools" hidden>${iconButton('art-left',u.left,'prev')}${iconButton('art-reset',u.reset,'reset')}${iconButton('art-right',u.right,'next')}</div>
-    <button type="button" class="art-toggle" id="art-toggle" aria-pressed="false">${icon('cube')}<span>${u.view3d}</span></button></div></figcaption>
-    <p class="art-message" id="art-status" role="status" aria-live="polite"></p><p class="sr-only" id="art-help">${u.artHelp}</p></figure>`;
+    <p class="sculpture-hint" id="art-hint">${u.artHint}</p></figcaption>
+    <p class="sr-only" id="art-status" role="status" aria-live="polite"></p><p class="sr-only" id="art-help">${u.artHelp}</p></figure>`;
 }
 
 function actions(project, {u,lang}, onHome) {
@@ -112,7 +111,7 @@ export function render(rawProfile, rawProjects, {lang,route,entry=false}) {
   const description = missing ? u.missingBody : home?p.bio:project.description;
   const canonical = siteUrl+localizedPath(lang,route);
   const body = home ? homeContent(ctx) : missing ? `<section class="not-found shell"><p class="caption">404</p><h1>${u.missing}</h1><p>${u.missingBody}</p><a class="button" href="${localizedPath(lang)}#projects">${u.back}${icon('arrow')}</a></section>` : detailContent(project,index,ctx);
-  const messages = {...u.runtime,shot:u.shot,shots:u.shots,bot:u.bot,site:u.site,view3d:u.view3d,still:u.still,artAlt:u.artAlt};
+  const messages = {...u.runtime,shot:u.shot,shots:u.shots,bot:u.bot,site:u.site,artAlt:u.artAlt};
   const galleryData = (missing?[]:home?projects:[project]).map(x=>({id:x.id,title:x.title,type:x.type,images:shots(x)}));
   // Only language-neutral legacy URLs consult a saved preference. Explicit shared
   // /uk/ and /en/ URLs always win. Resolve before paint and preserve deep links.

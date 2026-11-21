@@ -22,13 +22,13 @@ h1,h2,h3{font:400 1em/1.1 var(--display);text-transform:uppercase;letter-spacing
 h2{font-size:clamp(40px,4.5vw,62px);letter-spacing:3px}
 ::selection{background:var(--ink);color:var(--canvas)} :focus-visible{outline:2px solid var(--focus);outline-offset:4px} main:focus{outline:0}
 .shell{width:min(calc(100% - 2 * var(--gutter)),1280px);margin-inline:auto}.section{padding-block:var(--band)}
-.caption,.desktop-nav,.languages,.menu-toggle,.button,.text-action,.filter-button,.art-toggle,.tags,.expertise dt{font:400 11px/1.5 var(--mono);letter-spacing:1.5px;text-transform:uppercase}
+.caption,.desktop-nav,.languages,.menu-toggle,.button,.text-action,.filter-button,.tags,.expertise dt{font:400 11px/1.5 var(--mono);letter-spacing:1.5px;text-transform:uppercase}
 .caption{color:var(--muted)} .section-label{margin-bottom:24px}.icon{width:18px;height:18px;flex:none}
 .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .skip-link{position:fixed;top:10px;left:10px;z-index:30;background:var(--ink);color:var(--canvas);padding:8px 16px;transform:translateY(-160%)}.skip-link:focus{transform:none}
-.button,.art-toggle,.icon-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--rim);border-radius:9999px;transition:border-color 180ms ease}
+.button,.icon-button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border:1px solid var(--rim);border-radius:9999px;transition:border-color 180ms ease}
 .button{width:fit-content;min-height:48px;gap:22px;padding:12px 26px;border-color:var(--ink);letter-spacing:2px}
-.button:hover,.icon-button:hover,.art-toggle:hover{border-color:var(--body)}.icon-button{width:44px;flex:none}.text-action{display:inline-flex;align-items:center;gap:10px;min-height:44px;width:fit-content}
+.button:hover,.icon-button:hover{border-color:var(--body)}.icon-button{width:44px;flex:none}.text-action{display:inline-flex;align-items:center;gap:10px;min-height:44px;width:fit-content}
 .text-action .icon{width:15px;height:15px}.text-action:hover,.desktop-nav a:hover,.footer-top:hover{color:var(--ink);text-decoration:underline;text-underline-offset:5px}
 
 /* The switch is always reachable, including on project pages and small phones. */
@@ -51,11 +51,10 @@ html[lang="uk"] .hero h1{font-size:clamp(30px,12.1cqw,68px);letter-spacing:2px}
 .sculpture{position:relative;min-width:0}.sculpture-frame{position:relative;aspect-ratio:8/5;background:var(--canvas)}
 .sculpture-frame picture,.sculpture-frame img,.sculpture-frame canvas{width:100%;height:100%;object-fit:contain}
 .sculpture-frame canvas{position:absolute;inset:0;opacity:0;pointer-events:none;touch-action:pan-y;cursor:grab;transition:opacity 220ms ease}
-.sculpture[data-state="live"] canvas{opacity:1;pointer-events:auto}.sculpture-frame canvas:active{cursor:grabbing}
+.sculpture[data-state="live"] canvas{opacity:1;pointer-events:auto}.sculpture[data-state="still"] canvas{opacity:0;pointer-events:auto;cursor:pointer}.sculpture-frame canvas:active{cursor:grabbing}
 .sculpture figcaption{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px 20px;margin:12px 3% 0;padding-top:14px;border-top:1px solid var(--line)}
 .sculpture-credit{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 14px}.sculpture-credit>span:last-child{font:400 18px/1.2 var(--display);letter-spacing:1.5px;text-transform:uppercase}
-.art-buttons,#art-tools{display:flex;gap:5px;align-items:center}.art-toggle{gap:8px;padding:9px 14px;letter-spacing:1px;font-size:10px}.art-toggle .icon{width:16px;height:16px}
-.art-message{margin:6px 3% 0;color:var(--muted);font-size:16px}.art-message:empty{display:none}.sculpture[data-state="live"] .art-message{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+.sculpture-hint{margin-left:auto;color:var(--muted);font:400 9px/1.5 var(--mono);letter-spacing:1px;text-transform:uppercase;text-align:right}
 
 .project-toolbar{display:flex;align-items:end;justify-content:space-between;flex-wrap:wrap;gap:18px 36px;padding-bottom:24px;border-bottom:1px solid var(--line);margin-bottom:36px}
 .project-filters{display:flex;gap:4px}.filter-button{min-height:44px;padding:8px 14px;border:1px solid transparent;border-radius:9999px;color:var(--muted)}
@@ -98,7 +97,7 @@ dialog{color:var(--ink);background:var(--canvas);border:1px solid var(--rim);pad
 @media(max-width:700px){
   html{scroll-padding-top:78px}.header-inner{height:60px;gap:8px}.wordmark{font-size:15px;letter-spacing:4px}.menu-toggle span{display:none}.menu-toggle{min-width:44px}.languages{gap:0}.languages a{min-width:27px}.languages span{margin:0 1px}
   .hero{grid-template-columns:minmax(0,1fr);padding-top:42px;gap:22px}.hero h1{font-size:clamp(41px,9.8vw,66px);letter-spacing:2px}.hero-kicker{margin-bottom:18px}.hero-intro{margin:16px 0 20px;font-size:21px;max-width:34ch}
-  .sculpture figcaption{margin:0;padding-top:8px;column-gap:8px}.sculpture-credit{flex-direction:column;align-items:start;gap:2px}.sculpture[data-state="live"] figcaption{align-items:start}.hero-foot{margin-top:0;gap:8px;font-size:9px;letter-spacing:.8px;padding-block:14px}
+  .sculpture figcaption{margin:0;padding-top:8px;column-gap:8px}.sculpture-credit{flex-direction:column;align-items:start;gap:2px}.sculpture-hint{margin-left:0;text-align:left;font-size:8px}.hero-foot{margin-top:0;gap:8px;font-size:9px;letter-spacing:.8px;padding-block:14px}
   .project-toolbar{gap:18px;align-items:start;flex-direction:column;margin-bottom:24px;padding-bottom:16px}.filter-button{padding-inline:12px}.section-label{margin-bottom:16px}.projects-grid,.about-grid,.contact-grid,.detail-heading,.detail-gallery,.detail-gallery-bot{grid-template-columns:minmax(0,1fr)}
   .project-visual-bot{padding:16px}.about-identity{max-width:320px}.about-identity img{aspect-ratio:16/10}.contact-grid,.detail-heading{gap:22px}.contact-bottom{margin-top:25px}.email-group{gap:8px}.contact-email{font-size:clamp(22px,6.3vw,34px)}
   .detail-gallery-bot .detail-image-button{height:auto;max-height:none;padding:16px}.detail-gallery-bot .detail-image-button img{max-height:520px}.detail-bottom{align-items:start;flex-direction:column}.next-project{max-width:100%;text-align:left}.next-project>span:last-child{justify-content:start}.site-footer{gap:6px}.site-footer p{font-size:14px}

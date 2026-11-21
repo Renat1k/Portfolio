@@ -50,13 +50,13 @@ def export(filename, step):
                 x, y, z = v.co
                 nx, ny, nz = v.normal
                 p = tuple(round(t / 4 * 32767) for t in (x, z, -y))
-                n = tuple(round(t * 127) for t in (nx, nz, -ny))
-                rows.extend(struct.pack('<3h2x3bx', *p, *n))
+                n = tuple(round(t * 32767) for t in (nx, nz, -ny))
+                rows.extend(struct.pack('<3h3h', *p, *n))
                 positions.append(p)
         verts = view(rows, 34962, byteStride=12)
         position = accessor(verts, len(positions), 5122, 'VEC3', normalized=True,
                             min=list(map(min, zip(*positions))), max=list(map(max, zip(*positions))))
-        normal = accessor(verts, len(positions), 5120, 'VEC3', normalized=True, byteOffset=8)
+        normal = accessor(verts, len(positions), 5122, 'VEC3', normalized=True, byteOffset=6)
         primitives = []
         for slot, mat in enumerate(mesh.materials):
             indices = []

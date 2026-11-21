@@ -58,11 +58,14 @@ try {
   const desktop=await browser.newContext({locale:'en-US',viewport:{width:1440,height:900},permissions:['clipboard-read','clipboard-write']});
   await instrument(desktop); const page=await desktop.newPage();observe(page);
   const traffic=[]; page.on('request',r=>traffic.push(new URL(r.url()).pathname));
-  await test('Default language is independent of the browser locale; no initial 3D request',async()=>{
+  await test('Default language is independent of the browser locale; the 3D model loads and rotates without buttons',async()=>{
     await go(page);assert.equal(await lang(page),defaultLocale);
     assert.equal(await page.locator('.project-card').count(),data.length);
-    assert.ok(!traffic.some(s=>/sculpture\.js|\.glb$|atelier\.png/.test(s)));
-    assert.equal(await page.locator('canvas').count(),0);await audit(page);
+    await page.waitForSelector('#sculpture[data-state="live"]',{timeout:15000});
+    assert.ok(traffic.some(s=>s.endsWith('/infinity.glb')));
+    assert.equal(await page.locator('#sculpture canvas').count(),1);
+    assert.equal(await page.locator('#art-toggle, #art-left, #art-right, #art-reset').count(),0);
+    assert.ok(await page.locator('#sculpture canvas').evaluate(el=>el.tabIndex===0));await audit(page);
   });
   await test('Language switch, selection on return and explicit deep links preserve route, search and section',async()=>{
     const route=projectPath(data[0]), other=locales.find(l=>l!==defaultLocale);
@@ -105,42 +108,56 @@ try {
       await audit(page);
     }
   });
-  await test('Actual GL draws, orbit by pointer and keys, reset, idling, resource teardown and restart',async()=>{
-    await go(page,'/en/');await page.locator('#art-toggle').click();const art=page.locator('#sculpture');
-    await page.waitForSelector('#sculpture[data-state="live"]');await page.waitForTimeout(1100);
-    const canvas=art.locator('canvas');assert.ok(traffic.some(s=>s.endsWith('/infinity.glb')));assert.ok(await canvasDraws(page)>0);
-    const first=await canvas.screenshot(),idle=await canvasDraws(page);await page.waitForTimeout(220);assert.equal(await canvasDraws(page),idle);
+  await test('GL draws; drag and keys rotate; double-click freezes as photo; pressing wakes it; context loss falls back',async()=>{
+    await go(page,'/en/');const art=page.locator('#sculpture');await page.waitForSelector('#sculpture[data-state="live"]');await page.waitForTimeout(1100);
+    const canvas=art.locator('canvas');assert.ok(await canvasDraws(page)>0);const first=await canvas.screenshot();
     await canvas.focus();await page.keyboard.press('ArrowRight');await page.waitForTimeout(500);assert.notDeepEqual(await canvas.screenshot(),first);
     const before=await canvas.screenshot(),r=await canvas.boundingBox();
     await page.mouse.move(r.x+r.width/2,r.y+r.height/2);await page.mouse.down();await page.mouse.move(r.x+r.width*.7,r.y+r.height*.6,{steps:8});await page.mouse.up();
-    await page.waitForTimeout(400);assert.notDeepEqual(await canvas.screenshot(),before);await page.locator('#art-reset').click();
-    await page.locator('#contact').scrollIntoViewIfNeeded();await page.waitForTimeout(160);const off=await canvasDraws(page);await page.waitForTimeout(250);assert.equal(await canvasDraws(page),off);
-    await page.locator('#art-toggle').click(); assert.equal(await art.getAttribute('data-state'),'still');assert.equal(await canvas.count(),0);
-    await page.locator('#art-toggle').click();await page.waitForSelector('#sculpture[data-state="live"]');await audit(page);
+    await page.waitForTimeout(400);assert.notDeepEqual(await canvas.screenshot(),before);
+    await canvas.dblclick({position:{x:r.width*.3,y:r.height*.5}});await page.waitForFunction(()=>document.querySelector('#sculpture').dataset.state==='still');
+    await page.waitForFunction(()=>getComputedStyle(document.querySelector('#sculpture canvas')).opacity==='0');
+    assert.ok(await art.locator('img').isVisible());assert.match(await page.locator('#art-status').textContent(),/fixed as a photo/);
+    const frozen=await canvasDraws(page);await page.waitForTimeout(350);assert.equal(await canvasDraws(page),frozen);
+    await page.mouse.move(r.x+r.width*.5,r.y+r.height*.5);await page.mouse.down();await page.waitForFunction(()=>document.querySelector('#sculpture').dataset.state==='live');
+    await page.mouse.move(r.x+r.width*.7,r.y+r.height*.55,{steps:8});await page.mouse.up();await page.waitForTimeout(300);assert.ok(await canvasDraws(page)>frozen);
+    await canvas.focus();await page.keyboard.press('Space');await page.waitForFunction(()=>document.querySelector('#sculpture').dataset.state==='still');
+    await page.keyboard.press('Space');await page.waitForFunction(()=>document.querySelector('#sculpture').dataset.state==='live');
+    await page.waitForTimeout(1200);const idle=await canvasDraws(page);await page.waitForTimeout(250);assert.equal(await canvasDraws(page),idle);await audit(page);
     await canvas.evaluate(el=>el.getContext('webgl').getExtension('WEBGL_lose_context').loseContext());
     await page.waitForSelector('#sculpture[data-state="still"]');assert.ok(await art.locator('img').isVisible());assert.match(await page.locator('#art-status').textContent(),/studio render/);
   });
-  await test('Mobile: light GLB on demand, reduced motion, touch navigation and Ukrainian gallery controls',async()=>{
+  await test('Mobile: light GLB loads automatically, direct touch rotation, reduced motion and Ukrainian gallery controls',async()=>{
     const ctx=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:3,reducedMotion:'reduce'});
     await instrument(ctx,{low:true});const p=await ctx.newPage();observe(p);const req=[];p.on('request',r=>req.push(r.url()));await go(p,'/uk/');
-    assert.ok(req.some(u=>u.endsWith('infinity-640.webp')));assert.ok(!req.some(u=>/\.glb$|sculpture\.js/.test(u)));
+    assert.ok(req.some(u=>u.endsWith('infinity-640.webp')));await p.waitForSelector('#sculpture[data-state="live"]',{timeout:15000});
+    assert.ok(req.some(u=>u.endsWith('infinity-lite.glb')));assert.ok(!req.some(u=>u.endsWith('/infinity.glb')));
+    assert.equal(await p.locator('#art-toggle, #art-left, #art-right, #art-reset').count(),0);
+    assert.ok(await p.locator('canvas').evaluate(c=>c.width<=Math.ceil(c.clientWidth)));
     await p.locator('#menu-toggle').tap();assert.ok(await p.locator('#menu-dialog').isVisible());await audit(p);
     await p.locator('.menu-links a[href="#projects"]').tap();await p.waitForURL(/#projects$/);
-    assert.ok(!(await p.locator('#menu-dialog').isVisible()));await p.locator('#art-toggle').tap();await p.waitForSelector('#sculpture[data-state="live"]');await p.waitForTimeout(240);
-    assert.ok(req.some(u=>u.endsWith('infinity-lite.glb')));assert.ok(!req.some(u=>u.endsWith('/infinity.glb')));
-    assert.ok(await p.locator('canvas').evaluate(c=>c.width<=Math.ceil(c.clientWidth)));const draws=await canvasDraws(p);await p.waitForTimeout(240);assert.equal(await canvasDraws(p),draws);
-    await p.locator('#art-right').tap();await p.waitForTimeout(100);assert.ok(await canvasDraws(p)>draws);await overflow(p);await p.locator('#art-toggle').tap();
+    assert.ok(!(await p.locator('#menu-dialog').isVisible()));await overflow(p);
     await p.locator('[data-gallery="fluentfable-bot"]').first().tap();const view=await p.locator('#gallery-viewport').boundingBox();
     const cdp=await ctx.newCDPSession(p),y=view.y+view.height*.5;
     await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:view.x+view.width*.8,y}]});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:view.x+view.width*.25,y}]});
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await p.waitForFunction(()=>document.querySelector('#gallery-counter').textContent==='02 / 03');
-    await p.locator('#gallery-close').tap();await ctx.close();
+    await p.keyboard.press('Escape');await p.waitForFunction(()=>!document.querySelector('#gallery-dialog').open);
+    // Synthetic CDP drags can suppress the next synthesized tap in Chromium, so
+    // Escape closes the gallery and the direct-touch rotation check runs last.
+    await p.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await p.waitForTimeout(500);
+    assert.equal(await p.locator('#sculpture').getAttribute('data-state'),'live');
+    const draws=await canvasDraws(p),box=await p.locator('canvas').boundingBox();
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:box.x+box.width*.7,y:box.y+box.height*.5}]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:box.x+box.width*.3,y:box.y+box.height*.5}]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await p.waitForTimeout(180);assert.ok(await canvasDraws(p)>draws);
+    await ctx.close();
   });
   await test('No WebGL, blocked storage, disabled JS and language-specific HTTP 404',async()=>{
     const ctx=await browser.newContext();await instrument(ctx,{blocked:true,storage:true});const p=await ctx.newPage();observe(p);
-    await go(p,'/uk/');await p.locator('#art-toggle').click();await p.waitForFunction(()=>document.querySelector('#art-status').textContent.includes('недоступний'));
-    assert.ok(await p.locator('.sculpture-poster').isVisible());await p.locator('[data-language="en"]').click();assert.equal(await lang(p),'en');
+    await go(p,'/uk/');await p.waitForFunction(()=>document.querySelector('#art-status').textContent.includes('недоступний'));
+    assert.equal(await p.locator('#sculpture').getAttribute('data-state'),'still');assert.ok(await p.locator('.sculpture-poster').isVisible());
+    assert.equal(await p.locator('#art-toggle, #art-left, #art-right, #art-reset').count(),0);await p.locator('[data-language="en"]').click();assert.equal(await lang(p),'en');
     for(const l of locales){const r=await p.goto(`${base}/${l}/missing-portfolio-page/`);assert.equal(r.status(),404);assert.equal(await lang(p),l);await audit(p);}
     await p.locator('[data-language="uk"]').click();assert.equal(await lang(p),'uk');await ctx.close();
     const nojs=await browser.newContext({javaScriptEnabled:false,viewport:{width:320,height:760}});const plain=await nojs.newPage();

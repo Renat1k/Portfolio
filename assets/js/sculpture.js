@@ -24,7 +24,7 @@ void main() {
   vec3 n = normalize(surface), v = normalize(vec3(0., 3.216, 12.829) - point);
   vec3 r = reflect(-v, n);
   vec2 uv = vec2(.5 + atan(r.z,r.x) / 6.2831853, .5 - asin(clamp(r.y,-1.,1.)) / 3.14159265);
-  vec3 e = texture2D(studio, uv, roughness * 5.).rgb;
+  vec3 e = texture2D(studio, uv, 1.1 + roughness * 5.).rgb;
   e *= e;
   vec3 radiance = e / max(vec3(.002), vec3(1.)-e);
   vec3 f0 = mix(vec3(.04), tint, metal);
@@ -128,23 +128,29 @@ export async function mount(canvas, { lite, signal, failed }) {
     if (Math.abs(targetYaw-yaw)+Math.abs(targetPitch-pitch) > .0005) schedule();
   }
   function schedule() { if (!frame && visible && !document.hidden && !signal.aborted) frame = requestAnimationFrame(paint); }
+  function pause() { cancelAnimationFrame(frame); frame = 0; }
+  function resume() { schedule(); }
   function resize() {
     const width = canvas.clientWidth, height = canvas.clientHeight;
     if (!width || !height) return;
-    const dpr = Math.min(devicePixelRatio || 1, lite ? 1 : 1.5, (lite ? 720 : 1440)/width);
+    const dpr = Math.min(devicePixelRatio || 1, lite ? 1 : 2, (lite ? 900 : 1600)/width);
     canvas.width = Math.round(width*dpr); canvas.height = Math.round(height*dpr); gl.viewport(0,0,canvas.width,canvas.height); schedule();
   }
   function rotate(dx, dy = 0) { targetYaw += dx; targetPitch = Math.max(-1, Math.min(1,targetPitch+dy)); schedule(); }
-  function reset() { yaw %= 2*Math.PI; if (yaw > Math.PI) yaw -= 2*Math.PI; if (yaw < -Math.PI) yaw += 2*Math.PI; targetYaw = targetPitch = 0; schedule(); }
+  function reset() { yaw = targetYaw = 0; pitch = targetPitch = 0; schedule(); }
   let pointer = null;
   on(canvas,'pointerdown',e => {
     if (!e.isPrimary || e.button !== 0) return;
-    pointer = { id:e.pointerId, x:e.clientX, y:e.clientY }; canvas.setPointerCapture(e.pointerId);
+    pointer = { id:e.pointerId, x:e.clientX, y:e.clientY };
+    // Touch pointers are implicitly captured; explicit capture can swallow the next tap.
+    if (e.pointerType === 'mouse') canvas.setPointerCapture(e.pointerId);
   });
   on(canvas,'pointermove',e => {
     if (!pointer || pointer.id !== e.pointerId) return;
     rotate((e.clientX-pointer.x)*.009,(e.clientY-pointer.y)*.007); pointer.x=e.clientX; pointer.y=e.clientY;
   });
+  on(canvas,'pointerup',e => { if(pointer?.id===e.pointerId){ try{canvas.releasePointerCapture(e.pointerId);}catch{} pointer=null; } });
+  on(canvas,'pointercancel',e => { if(pointer?.id===e.pointerId){ try{canvas.releasePointerCapture(e.pointerId);}catch{} pointer=null; } });
   on(canvas,'lostpointercapture',() => { pointer = null; });
   on(canvas,'keydown',e => {
     const delta = {ArrowLeft:[-.23,0],ArrowRight:[.23,0],ArrowUp:[0,-.15],ArrowDown:[0,.15]}[e.key];
@@ -153,5 +159,5 @@ export async function mount(canvas, { lite, signal, failed }) {
   on(document,'visibilitychange',schedule); on(motion,'change',schedule);
   observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; if (visible) schedule(); else { cancelAnimationFrame(frame); frame=0; } });
   observer.observe(canvas); resizer = new ResizeObserver(resize); resizer.observe(canvas); resize();
-  return { rotate, reset };
+  return { rotate, reset, pause, resume };
 }
