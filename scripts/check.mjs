@@ -57,6 +57,19 @@ for(const [key,{html}] of pages) for(const match of html.matchAll(/\b(href|src|s
 }
 for(const lang of locales) await exists(`assets/img/social-${lang}.png`);
 for(const m of (await read('assets/css/styles.css')).matchAll(/url\("([^"]+)"\)/g)) await exists(path.posix.join('assets/css',m[1]));
+const headerBlocks=(await read('_headers',root)).split(/\r?\n\s*\r?\n/);
+const broadIndex=headerBlocks.findIndex(b=>b.split(/\r?\n/)[0].trim()==='/assets/*');
+assert.ok(broadIndex>=0,'Missing broad /assets/* cache rule');
+for(const [rule,cache] of [['/assets/js/*','public, max-age=0, must-revalidate'],['/assets/css/*','public, max-age=0, must-revalidate']]){
+  const index=headerBlocks.findIndex(b=>b.split(/\r?\n/)[0].trim()===rule), block=headerBlocks[index];
+  assert.ok(index>broadIndex,`${rule} must come after /assets/* so it can detach Cache-Control`);
+  const lines=block.split(/\r?\n/), detach=lines.findIndex(l=>l.trim()==='! Cache-Control'), set=lines.findIndex(l=>l.trim().startsWith('Cache-Control:'));
+  assert.ok(detach>0 && set>detach,`${rule} must detach and then set Cache-Control`);
+  assert.equal(lines[set].trim(),`Cache-Control: ${cache}`,`${rule} cache value`);
+}
+const workflow=(await read('.github/workflows/verify.yml',root)).split(/\r?\n/).map(l=>l.trim());
+assert.ok(workflow.includes('- run: npm run test:browser'),'Browser tests must run in CI');
+assert.ok(workflow.some(l=>l.includes('playwright-core/cli.js install')&&l.includes('--with-deps')),'CI must install the browser');
 const triangles=[];
 for(const [file,budget] of [['infinity.glb',175000],['infinity-lite.glb',90000]]) {
   const b=await readFile(path.join(dist,'assets/sculpture',file));
