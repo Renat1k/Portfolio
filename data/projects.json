@@ -1,6 +1,21 @@
 ﻿[
   {
     "type": "site",
+    "title": "Marzipan Confectionery",
+    "description": "A responsive demo storefront for a Kyiv confectionery: eight cakes with category filters, a four-step custom cake builder with live pricing, a persistent cart, a free-delivery threshold and a complete demo checkout flow.",
+    "image": "./assets/img/projects/marzipan-home.png",
+    "screenshots": [
+      "./assets/img/projects/marzipan-home.webp",
+      "./assets/img/projects/marzipan-catalog.webp",
+      "./assets/img/projects/marzipan-builder.webp",
+      "./assets/img/projects/marzipan-cart.webp"
+    ],
+    "tags": ["HTML5", "CSS3", "Vanilla JS", "LocalStorage", "E-commerce", "GitHub Pages"],
+    "demo": "https://renat1k.github.io/marzipan-demo/",
+    "repo": "https://github.com/Renat1k/marzipan-demo"
+  },
+  {
+    "type": "site",
     "title": "Mriia Beauty Studio",
     "description": "A polished demo website for a fictional Kyiv beauty studio: 14 services with search and category filters, a filterable team directory, and a three-step demo booking flow with schedule validation, local saves and calendar export. The cream-toned interface features custom pre-rendered 3D clay illustrations.",
     "image": "./assets/img/projects/mriia-home.png",

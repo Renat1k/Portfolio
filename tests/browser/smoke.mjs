@@ -74,7 +74,7 @@ try {
     await go(page,`/${defaultLocale}/${route}`);assert.equal(await lang(page),defaultLocale);
     await page.locator(`[data-language="${defaultLocale}"]`).click();await go(page);assert.equal(await lang(page),defaultLocale);
   });
-  await test('Both locales: desktop links, six original cases, filters, gallery, copy and responsive layouts',async()=>{
+  await test('Both locales: desktop links, all original cases, filters, gallery, copy and responsive layouts',async()=>{
     for(const l of locales){
       await go(page,`/${l}/`);
       for(const filter of ['site','bot','all']){
@@ -84,10 +84,11 @@ try {
       }
       await page.locator('.desktop-nav a[href="#contact"]').click();await page.waitForURL(/#contact$/);
       await page.locator('#copy-email').click();assert.equal(await page.evaluate(()=>navigator.clipboard.readText()),'fluentfabledev@gmail.com');
-      const opener=page.locator('[data-gallery="mriia-beauty-studio"]').first();await opener.click();
-      for(let i=0;i<4;i++){
+      const first=data[0], firstId=projectPath(first).split('/')[1], total=first.screenshots?.length||1;
+      const opener=page.locator(`[data-gallery="${firstId}"]`).first();await opener.click();
+      for(let i=0;i<total;i++){
         await page.waitForFunction(()=>{const img=document.querySelector('#gallery-image');return img.complete&&img.naturalWidth>0;});
-        assert.equal(await page.locator('#gallery-counter').textContent(),`0${i+1} / 04`); await page.keyboard.press('ArrowRight');
+        assert.equal(await page.locator('#gallery-counter').textContent(),`${String(i+1).padStart(2,'0')} / ${String(total).padStart(2,'0')}`); await page.keyboard.press('ArrowRight');
       }
       await page.locator('.gallery-thumb').nth(2).click();assert.equal(await page.locator('#gallery-counter').textContent(),'03 / 04');
       await audit(page);await page.keyboard.press('Escape');assert.ok(await opener.evaluate(el=>el===document.activeElement));

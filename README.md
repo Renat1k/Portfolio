@@ -4,7 +4,7 @@
 
 ![Головна сторінка FluentFable зі скульптурою Chrome Infinity](./assets/img/portfolio-preview.png)
 
-Статичне двомовне портфоліо: шість проєктів із демо, скриншотами та доступними репозиторіями, профіль і контакти. Дизайн спирається на [`DESIGN.md`](./DESIGN.md). Шрифти локальні: Saira Condensed і Roboto Condensed для кирилиці, Cormorant Garamond для основного тексту, IBM Plex Mono для навігації. Ліцензії — в `assets/fonts/`.
+Статичне двомовне портфоліо: сім проєктів із демо, скриншотами та доступними репозиторіями, профіль і контакти. Дизайн спирається на [`DESIGN.md`](./DESIGN.md). Шрифти локальні: Saira Condensed і Roboto Condensed для кирилиці, Cormorant Garamond для основного тексту, IBM Plex Mono для навігації. Ліцензії — в `assets/fonts/`.
 
 ## Мови й контент
 
